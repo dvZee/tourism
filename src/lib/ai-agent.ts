@@ -152,18 +152,31 @@ ${this.persona.tone_instructions}`;
   }
 }
 
-export async function createConversation(language: string = 'en', personaId?: string): Promise<string> {
+export async function createConversation(language: string = 'en', personaId?: string, userId?: string): Promise<string> {
   const { data, error } = await supabase
     .from('conversations')
     .insert({
       language,
       persona_id: personaId || null,
+      user_id: userId || null,
+      title: 'New Conversation',
     })
     .select()
     .single();
 
   if (error) throw error;
   return data.id;
+}
+
+export async function loadConversation(conversationId: string): Promise<Message[]> {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
 }
 
 export async function getPersonas(): Promise<Persona[]> {
