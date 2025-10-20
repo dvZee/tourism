@@ -225,7 +225,7 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden" style={{ height: '100dvh' }}>
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDE2djRoLTR2LTRoNHptMCA2djRoLTR2LTRoNHptLTYgNnY0aC00di00aDR6bS02IDB2NGgtNHYtNGg0em0tNi02djRoLTR2LTRoNHptMC02djRoLTR2LTRoNHptNiAwdjRoLTR2LTRoNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40"></div>
 
       <header className="relative bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-2xl">
@@ -438,7 +438,7 @@ export default function ChatInterface() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto relative">
+      <main className="flex-1 overflow-y-auto relative" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {messages.length === 0 ? (
             <div className="text-center py-12 sm:py-16 animate-fade-in">
@@ -542,7 +542,7 @@ export default function ChatInterface() {
         </div>
       </main>
 
-      <footer className="relative bg-white/10 backdrop-blur-xl border-t border-white/20">
+      <footer className="relative bg-white/10 backdrop-blur-xl border-t border-white/20 flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
           <div className="flex gap-2 sm:gap-3">
             <div className="flex-1 relative">

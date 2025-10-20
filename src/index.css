@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
 @layer utilities {
   @keyframes slide-up {
     from {

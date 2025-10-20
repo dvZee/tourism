@@ -136,8 +136,11 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
-    if (!isMuted) {
+    const newMutedState = !isMuted;
+    setIsMuted(newMutedState);
+
+    if (newMutedState) {
+      // Muting - stop all audio
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -145,6 +148,11 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
         speechSynthesis.cancel();
       }
       setVoiceActive(false);
+    } else {
+      // Unmuting - restart playback if in voice phase
+      if (phase === 'voice') {
+        playWelcomeMessage();
+      }
     }
   };
 
