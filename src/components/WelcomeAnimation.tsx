@@ -10,7 +10,10 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
   const [phase, setPhase] = useState<'illustration' | 'greeting' | 'voice'>('illustration');
   const [showSkip, setShowSkip] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
+  const [audioError, setAudioError] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     setShowSkip(true);
@@ -36,10 +39,27 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
       if (speechSynthesis.speaking) {
         speechSynthesis.cancel();
       }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, [onComplete]);
 
   const playWelcomeMessage = () => {
+    if (isMuted) return;
+
+    const audio = new Audio('/audio/welcome.mp3');
+    audioRef.current = audio;
+
+    audio.play().catch((error) => {
+      console.warn('Audio playback failed, falling back to speech synthesis:', error);
+      setAudioError(true);
+      fallbackToSpeechSynthesis();
+    });
+  };
+
+  const fallbackToSpeechSynthesis = () => {
     const loadVoices = () => {
       const voices = speechSynthesis.getVoices();
       const italianVoice = voices.find(voice => voice.lang.startsWith('it'));
@@ -70,18 +90,52 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
     if (speechSynthesis.speaking) {
       speechSynthesis.cancel();
     }
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
     onSkip();
   };
 
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    if (!isMuted) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+      setVoiceActive(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-green-50/30 via-emerald-50/30 to-teal-50/30 z-50 flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'rgba(240, 253, 244, 0.5)' }}>
-      <button
-        onClick={handleSkip}
-        className="absolute top-6 right-6 p-3 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110 z-10"
-        aria-label="Skip animation"
-      >
-        <X className="w-6 h-6 text-gray-700" />
-      </button>
+    <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 z-50 flex items-center justify-center overflow-hidden">
+      <div className="absolute top-6 right-6 flex gap-2 z-10">
+        <button
+          onClick={toggleMute}
+          className="p-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full shadow-lg transition-all hover:scale-110 border border-white/20"
+          aria-label={isMuted ? "Unmute" : "Mute"}
+        >
+          {isMuted ? (
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+          )}
+        </button>
+        <button
+          onClick={handleSkip}
+          className="p-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full shadow-lg transition-all hover:scale-110 border border-white/20"
+          aria-label="Skip animation"
+        >
+          <X className="w-6 h-6 text-white" />
+        </button>
+      </div>
 
       <div className="relative w-full h-full flex items-center justify-center">
         {phase === 'illustration' && (
@@ -270,7 +324,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
         {phase === 'greeting' && (
           <div className="animate-fade-in text-center">
             <h1
-              className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500"
+              className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-amber-400 to-orange-500"
               style={{
                 animation: 'scaleIn 1s ease-out forwards',
               }}
@@ -285,7 +339,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
             <div className="relative mb-8">
               <div className="relative inline-flex items-center justify-center">
                 <div
-                  className={`absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-xl transition-all duration-700 ${
+                  className={`absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full blur-xl transition-all duration-700 ${
                     voiceActive ? 'scale-150 opacity-30' : 'scale-100 opacity-20'
                   }`}
                   style={{
@@ -294,7 +348,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
                 ></div>
 
                 <div
-                  className={`relative w-32 h-32 rounded-full bg-gradient-to-br from-green-400 via-emerald-500 to-teal-500 shadow-2xl flex items-center justify-center transition-all duration-500 ${
+                  className={`relative w-32 h-32 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 shadow-2xl flex items-center justify-center transition-all duration-500 ${
                     voiceActive ? 'scale-110' : 'scale-100'
                   }`}
                 >
@@ -344,7 +398,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
               </div>
             </div>
 
-            <p className="text-2xl text-gray-700 font-medium max-w-3xl mx-auto px-8 leading-relaxed text-center">
+            <p className="text-2xl text-white font-medium max-w-3xl mx-auto px-8 leading-relaxed text-center">
               Benvenuto, sono la guida turistica di questo bellissimo borgo. Come posso aiutarti?
             </p>
           </div>
