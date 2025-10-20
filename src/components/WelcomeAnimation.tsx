@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
 interface WelcomeAnimationProps {
@@ -10,6 +10,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
   const [phase, setPhase] = useState<'illustration' | 'greeting' | 'voice'>('illustration');
   const [showSkip, setShowSkip] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     setShowSkip(true);
@@ -21,23 +22,46 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
     const greetingTimer = setTimeout(() => {
       setPhase('voice');
       setVoiceActive(true);
+      playWelcomeMessage();
     }, 5500);
 
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, 9000);
+    }, 12000);
 
     return () => {
       clearTimeout(illustrationTimer);
       clearTimeout(greetingTimer);
       clearTimeout(completeTimer);
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
     };
   }, [onComplete]);
 
+  const playWelcomeMessage = () => {
+    const utterance = new SpeechSynthesisUtterance(
+      "Benvenuto, sono la guida turistica di questo bellissimo borgo. Come posso aiutarti?"
+    );
+    utterance.lang = 'it-IT';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utteranceRef.current = utterance;
+
+    speechSynthesis.speak(utterance);
+  };
+
+  const handleSkip = () => {
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+    }
+    onSkip();
+  };
+
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 z-50 flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 bg-gradient-to-br from-green-50/30 via-emerald-50/30 to-teal-50/30 z-50 flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'rgba(240, 253, 244, 0.5)' }}>
       <button
-        onClick={onSkip}
+        onClick={handleSkip}
         className="absolute top-6 right-6 p-3 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110 z-10"
         aria-label="Skip animation"
       >

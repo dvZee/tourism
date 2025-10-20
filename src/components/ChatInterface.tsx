@@ -17,7 +17,7 @@ export default function ChatInterface() {
   const [agent, setAgent] = useState<AIAgent | null>(null);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [selectedPersona, setSelectedPersona] = useState<string>('');
-  const [language, setLanguage] = useState<'en' | 'it' | 'es'>('en');
+  const [language, setLanguage] = useState<'en' | 'it' | 'es'>('it');
   const [initialized, setInitialized] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
