@@ -7,16 +7,20 @@ interface WelcomeAnimationProps {
 }
 
 export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimationProps) {
-  const [phase, setPhase] = useState<'illustration' | 'greeting' | 'voice'>('illustration');
+  const [phase, setPhase] = useState<'start' | 'illustration' | 'greeting' | 'voice'>('start');
   const [showSkip, setShowSkip] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
   const [audioError, setAudioError] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hasUserInteracted = useRef(false);
+  const animationStarted = useRef(false);
 
-  useEffect(() => {
+  const startAnimation = () => {
+    if (animationStarted.current) return;
+    animationStarted.current = true;
+
+    setPhase('illustration');
     setShowSkip(true);
 
     // Preload audio
@@ -24,13 +28,6 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
     audio.preload = 'auto';
     audio.load();
     audioRef.current = audio;
-
-    // Add user interaction listener
-    const handleInteraction = () => {
-      hasUserInteracted.current = true;
-    };
-    document.addEventListener('click', handleInteraction, { once: true });
-    document.addEventListener('touchstart', handleInteraction, { once: true });
 
     const illustrationTimer = setTimeout(() => {
       setPhase('greeting');
@@ -50,8 +47,6 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
       clearTimeout(illustrationTimer);
       clearTimeout(greetingTimer);
       clearTimeout(completeTimer);
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('touchstart', handleInteraction);
       if (speechSynthesis.speaking) {
         speechSynthesis.cancel();
       }
@@ -60,7 +55,19 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
         audioRef.current = null;
       }
     };
-  }, [onComplete]);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   const playWelcomeMessage = () => {
     if (isMuted) return;
@@ -169,8 +176,30 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 z-50 flex items-center justify-center overflow-hidden">
-      <div className="absolute top-6 right-6 flex gap-2 z-10">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden transition-colors duration-1000 ${
+      phase === 'voice'
+        ? 'bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50'
+        : 'bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900'
+    }`}>
+      {phase === 'start' && (
+        <div
+          onClick={startAnimation}
+          className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-50 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900"
+        >
+          <div className="text-center animate-fade-in">
+            <div className="mb-8">
+              <svg className="w-24 h-24 mx-auto text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+            </div>
+            <h2 className="text-4xl font-bold text-white mb-4">Tocca per iniziare</h2>
+            <p className="text-blue-200 text-lg">Click anywhere to start the experience</p>
+          </div>
+        </div>
+      )}
+
+      {phase !== 'start' && (
+        <div className="absolute top-6 right-6 flex gap-2 z-10">
         <button
           onClick={toggleMute}
           className="p-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full shadow-lg transition-all hover:scale-110 border border-white/20"
@@ -194,7 +223,8 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
         >
           <X className="w-6 h-6 text-white" />
         </button>
-      </div>
+        </div>
+      )}
 
       <div className="relative w-full h-full flex items-center justify-center">
         {phase === 'illustration' && (
@@ -398,8 +428,8 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
             <div className="relative mb-8">
               <div className="relative inline-flex items-center justify-center">
                 <div
-                  className={`absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full blur-xl transition-all duration-700 ${
-                    voiceActive ? 'scale-150 opacity-30' : 'scale-100 opacity-20'
+                  className={`absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full blur-xl transition-all duration-700 ${
+                    voiceActive ? 'scale-150 opacity-40' : 'scale-100 opacity-20'
                   }`}
                   style={{
                     animation: voiceActive ? 'pulse 2s ease-in-out infinite' : 'none',
@@ -407,7 +437,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
                 ></div>
 
                 <div
-                  className={`relative w-32 h-32 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 shadow-2xl flex items-center justify-center transition-all duration-500 ${
+                  className={`relative w-32 h-32 rounded-full bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 shadow-2xl flex items-center justify-center transition-all duration-500 ${
                     voiceActive ? 'scale-110' : 'scale-100'
                   }`}
                 >
