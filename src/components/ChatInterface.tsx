@@ -248,7 +248,7 @@ export default function ChatInterface() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="hidden lg:flex items-center gap-2 bg-white/5 backdrop-blur-sm p-1 rounded-xl border border-white/10">
                 <button
                   onClick={() => handleLanguageChange('en')}
@@ -282,61 +282,42 @@ export default function ChatInterface() {
                 </button>
               </div>
 
-              <select
-                value={selectedPersona}
-                onChange={(e) => handlePersonaChange(e.target.value)}
-                className="hidden md:block px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all cursor-pointer"
-              >
-                <option value="" className="bg-slate-900">Persona</option>
-                {personas.map((persona) => (
-                  <option key={persona.id} value={persona.id} className="bg-slate-900">
-                    {persona.name.charAt(0).toUpperCase() + persona.name.slice(1)}
-                  </option>
-                ))}
-              </select>
-
-              {user && (
-                <>
+              {user ? (
+                <div className="hidden sm:flex items-center gap-2">
                   <button
                     onClick={startNewConversation}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all text-xs font-medium border border-white/20"
+                    className="p-2 hover:bg-white/20 text-white rounded-xl transition-all"
+                    title={getTranslation(language, 'newChat')}
                   >
-                    <Plus className="w-4 h-4" />
-                    <span className="hidden lg:inline">{getTranslation(language, 'newChat')}</span>
+                    <Plus className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setShowChatHistory(true)}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all text-xs font-medium border border-white/20"
+                    className="p-2 hover:bg-white/20 text-white rounded-xl transition-all"
+                    title={getTranslation(language, 'chatHistory')}
                   >
-                    <History className="w-4 h-4" />
-                    <span className="hidden lg:inline">{getTranslation(language, 'chatHistory')}</span>
+                    <History className="w-5 h-5" />
                   </button>
-                </>
-              )}
-
-              {user ? (
-                <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-white/20">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-xl border border-white/20">
-                    <UserCircle className="w-4 h-4 text-white" />
-                    <span className="text-xs text-white font-medium hidden lg:inline max-w-24 truncate">
-                      {userProfile?.display_name || user.email?.split('@')[0]}
-                    </span>
-                  </div>
+                  <div className="h-6 w-px bg-white/20"></div>
                   <button
                     onClick={handleSignOut}
-                    className="p-2 hover:bg-white/20 text-white rounded-xl transition-all"
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-white/20 text-white rounded-xl transition-all group"
                     title="Sign out"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <UserCircle className="w-5 h-5" />
+                    <span className="text-sm font-medium hidden xl:inline max-w-32 truncate">
+                      {userProfile?.display_name || user.email?.split('@')[0]}
+                    </span>
+                    <LogOut className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/50 transition-all text-xs"
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/50 transition-all"
                 >
-                  <UserCircle className="w-4 h-4" />
-                  {getTranslation(language, 'signIn')}
+                  <UserCircle className="w-5 h-5" />
+                  <span className="text-sm">{getTranslation(language, 'signIn')}</span>
                 </button>
               )}
 
@@ -348,6 +329,35 @@ export default function ChatInterface() {
               </button>
             </div>
           </div>
+
+          {user && personas.length > 0 && (
+            <div className="hidden md:flex items-center justify-center gap-2 mt-3 pt-3 border-t border-white/10">
+              <span className="text-xs text-blue-200 font-medium">Persona:</span>
+              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm p-1 rounded-lg border border-white/10">
+                {personas.map((persona) => (
+                  <button
+                    key={persona.id}
+                    onClick={() => handlePersonaChange(persona.id)}
+                    className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-300 ${
+                      selectedPersona === persona.id
+                        ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-md'
+                        : 'text-blue-200 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    {persona.name.charAt(0).toUpperCase() + persona.name.slice(1)}
+                  </button>
+                ))}
+                {selectedPersona && (
+                  <button
+                    onClick={() => handlePersonaChange('')}
+                    className="px-3 py-1 rounded-md text-xs font-medium text-blue-200 hover:bg-white/10 hover:text-white transition-all duration-300"
+                  >
+                    Default
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {showMobileMenu && (
             <div className="sm:hidden mt-4 pt-4 border-t border-white/20 space-y-2 animate-slide-up">
