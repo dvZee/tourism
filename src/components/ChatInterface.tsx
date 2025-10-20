@@ -7,6 +7,7 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { UserProfile } from '../lib/auth';
 import AuthModal from './AuthModal';
 import ChatHistory from './ChatHistory';
+import WelcomeAnimation from './WelcomeAnimation';
 import { supabase } from '../lib/supabase';
 
 export default function ChatInterface() {
@@ -24,6 +25,7 @@ export default function ChatInterface() {
   const [showChatHistory, setShowChatHistory] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [conversationId, setConversationId] = useState<string>('');
+  const [showWelcome, setShowWelcome] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -210,6 +212,15 @@ export default function ChatInterface() {
           <p className="mt-4 text-blue-200 font-medium">Initializing your guide...</p>
         </div>
       </div>
+    );
+  }
+
+  if (showWelcome) {
+    return (
+      <WelcomeAnimation
+        onComplete={() => setShowWelcome(false)}
+        onSkip={() => setShowWelcome(false)}
+      />
     );
   }
 
