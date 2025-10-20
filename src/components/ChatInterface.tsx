@@ -9,6 +9,7 @@ import AuthModal from './AuthModal';
 import ChatHistory from './ChatHistory';
 import WelcomeAnimation from './WelcomeAnimation';
 import { supabase } from '../lib/supabase';
+import { getTranslation, type Language } from '../lib/translations';
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -17,7 +18,7 @@ export default function ChatInterface() {
   const [agent, setAgent] = useState<AIAgent | null>(null);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [selectedPersona, setSelectedPersona] = useState<string>('');
-  const [language, setLanguage] = useState<'en' | 'it' | 'es'>('it');
+  const [language, setLanguage] = useState<Language>('it');
   const [initialized, setInitialized] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -239,10 +240,10 @@ export default function ChatInterface() {
                 <Sparkles className="w-3 h-3 text-amber-300 absolute -top-0.5 -right-0.5 animate-pulse" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-lg sm:text-xl font-bold text-white">AI Tourism Assistant</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-white">{getTranslation(language, 'appTitle')}</h1>
                 <p className="text-xs text-blue-200 flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
-                  Italian heritage guide
+                  {getTranslation(language, 'appSubtitle')}
                 </p>
               </div>
             </div>
@@ -251,33 +252,33 @@ export default function ChatInterface() {
               <div className="hidden lg:flex items-center gap-2 bg-white/5 backdrop-blur-sm p-1 rounded-xl border border-white/10">
                 <button
                   onClick={() => handleLanguageChange('en')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
                     language === 'en'
                       ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50 scale-105'
                       : 'text-blue-200 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  EN
+                  {getTranslation(language, 'english')}
                 </button>
                 <button
                   onClick={() => handleLanguageChange('it')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
                     language === 'it'
                       ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50 scale-105'
                       : 'text-blue-200 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  IT
+                  {getTranslation(language, 'italian')}
                 </button>
                 <button
                   onClick={() => handleLanguageChange('es')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
                     language === 'es'
                       ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50 scale-105'
                       : 'text-blue-200 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  ES
+                  {getTranslation(language, 'spanish')}
                 </button>
               </div>
 
@@ -301,14 +302,14 @@ export default function ChatInterface() {
                     className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all text-xs font-medium border border-white/20"
                   >
                     <Plus className="w-4 h-4" />
-                    <span className="hidden lg:inline">New</span>
+                    <span className="hidden lg:inline">{getTranslation(language, 'newChat')}</span>
                   </button>
                   <button
                     onClick={() => setShowChatHistory(true)}
                     className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all text-xs font-medium border border-white/20"
                   >
                     <History className="w-4 h-4" />
-                    <span className="hidden lg:inline">History</span>
+                    <span className="hidden lg:inline">{getTranslation(language, 'chatHistory')}</span>
                   </button>
                 </>
               )}
@@ -335,7 +336,7 @@ export default function ChatInterface() {
                   className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/50 transition-all text-xs"
                 >
                   <UserCircle className="w-4 h-4" />
-                  Sign In
+                  {getTranslation(language, 'signIn')}
                 </button>
               )}
 
@@ -359,7 +360,7 @@ export default function ChatInterface() {
                       : 'bg-white/10 text-blue-200'
                   }`}
                 >
-                  English
+                  {getTranslation(language, 'english')}
                 </button>
                 <button
                   onClick={() => handleLanguageChange('it')}
@@ -369,7 +370,7 @@ export default function ChatInterface() {
                       : 'bg-white/10 text-blue-200'
                   }`}
                 >
-                  Italiano
+                  {getTranslation(language, 'italian')}
                 </button>
                 <button
                   onClick={() => handleLanguageChange('es')}
@@ -379,7 +380,7 @@ export default function ChatInterface() {
                       : 'bg-white/10 text-blue-200'
                   }`}
                 >
-                  Español
+                  {getTranslation(language, 'spanish')}
                 </button>
               </div>
               <select
@@ -449,14 +450,14 @@ export default function ChatInterface() {
                 </div>
               </div>
               <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3">
-                Welcome to Your AI Tourism Guide
+                {getTranslation(language, 'welcomeTitle')}
               </h2>
               <p className="text-blue-200 text-base sm:text-lg mb-8 max-w-2xl mx-auto leading-relaxed px-4">
-                Ask me anything about Italian monuments, history, legends, and culture. I'm here to make your visit memorable!
+                {getTranslation(language, 'welcomeSubtitle')}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto px-4">
                 <button
-                  onClick={() => setInput("Tell me about the Colosseum")}
+                  onClick={() => setInput(getTranslation(language, 'exampleColosseum'))}
                   className="group p-4 sm:p-6 text-left bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 hover:border-amber-400/50 hover:shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 hover:scale-105"
                 >
                   <div className="flex items-start gap-3">
@@ -464,13 +465,13 @@ export default function ChatInterface() {
                       <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-semibold text-white mb-1 text-sm sm:text-base">Tell me about the Colosseum</p>
-                      <p className="text-xs sm:text-sm text-blue-200">Learn about ancient Rome</p>
+                      <p className="font-semibold text-white mb-1 text-sm sm:text-base">{getTranslation(language, 'exampleColosseum')}</p>
+                      <p className="text-xs sm:text-sm text-blue-200">{getTranslation(language, 'exampleColeosseumSubtitle')}</p>
                     </div>
                   </div>
                 </button>
                 <button
-                  onClick={() => setInput("What are some Italian legends?")}
+                  onClick={() => setInput(getTranslation(language, 'exampleLegends'))}
                   className="group p-4 sm:p-6 text-left bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 hover:border-amber-400/50 hover:shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 hover:scale-105"
                 >
                   <div className="flex items-start gap-3">
@@ -478,8 +479,8 @@ export default function ChatInterface() {
                       <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-semibold text-white mb-1 text-sm sm:text-base">Italian legends</p>
-                      <p className="text-xs sm:text-sm text-blue-200">Discover folklore and stories</p>
+                      <p className="font-semibold text-white mb-1 text-sm sm:text-base">{getTranslation(language, 'exampleLegends')}</p>
+                      <p className="text-xs sm:text-sm text-blue-200">{getTranslation(language, 'exampleLegendsSubtitle')}</p>
                     </div>
                   </div>
                 </button>
@@ -551,7 +552,7 @@ export default function ChatInterface() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me about monuments, history, legends..."
+                placeholder={getTranslation(language, 'inputPlaceholder')}
                 className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent text-white placeholder-blue-200/60 transition-all disabled:opacity-50 text-sm sm:text-base"
                 disabled={loading}
               />
@@ -567,7 +568,7 @@ export default function ChatInterface() {
               ) : (
                 <>
                   <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline">Send</span>
+                  <span className="hidden sm:inline">{getTranslation(language, 'send')}</span>
                 </>
               )}
             </button>

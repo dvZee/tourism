@@ -14,9 +14,23 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
   const [isMuted, setIsMuted] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const hasUserInteracted = useRef(false);
 
   useEffect(() => {
     setShowSkip(true);
+
+    // Preload audio
+    const audio = new Audio('/audio/welcome.mp3');
+    audio.preload = 'auto';
+    audio.load();
+    audioRef.current = audio;
+
+    // Add user interaction listener
+    const handleInteraction = () => {
+      hasUserInteracted.current = true;
+    };
+    document.addEventListener('click', handleInteraction, { once: true });
+    document.addEventListener('touchstart', handleInteraction, { once: true });
 
     const illustrationTimer = setTimeout(() => {
       setPhase('greeting');
@@ -36,6 +50,8 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
       clearTimeout(illustrationTimer);
       clearTimeout(greetingTimer);
       clearTimeout(completeTimer);
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
       if (speechSynthesis.speaking) {
         speechSynthesis.cancel();
       }
@@ -49,19 +65,12 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
   const playWelcomeMessage = () => {
     if (isMuted) return;
 
-    const audio = new Audio('/audio/welcome.mp3');
-    audioRef.current = audio;
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/audio/welcome.mp3');
+    }
 
-    // Add event listeners for debugging
-    audio.addEventListener('loadeddata', () => {
-      console.log('Audio loaded successfully');
-    });
-
-    audio.addEventListener('error', (e) => {
-      console.error('Audio loading error:', e);
-      setAudioError(true);
-      fallbackToSpeechSynthesis();
-    });
+    const audio = audioRef.current;
+    audio.currentTime = 0;
 
     // Attempt to play
     const playPromise = audio.play();
@@ -77,6 +86,9 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
           setAudioError(true);
           fallbackToSpeechSynthesis();
         });
+    } else {
+      // Fallback if play() doesn't return a promise
+      setVoiceActive(true);
     }
   };
 
