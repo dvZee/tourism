@@ -52,17 +52,44 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
     const audio = new Audio('/audio/welcome.mp3');
     audioRef.current = audio;
 
-    audio.play().catch((error) => {
-      console.warn('Audio playback failed, falling back to speech synthesis:', error);
+    // Add event listeners for debugging
+    audio.addEventListener('loadeddata', () => {
+      console.log('Audio loaded successfully');
+    });
+
+    audio.addEventListener('error', (e) => {
+      console.error('Audio loading error:', e);
       setAudioError(true);
       fallbackToSpeechSynthesis();
     });
+
+    // Attempt to play
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          console.log('Audio playback started successfully');
+          setVoiceActive(true);
+        })
+        .catch((error) => {
+          console.warn('Audio playback failed, falling back to speech synthesis:', error);
+          setAudioError(true);
+          fallbackToSpeechSynthesis();
+        });
+    }
   };
 
   const fallbackToSpeechSynthesis = () => {
+    console.log('Using speech synthesis fallback');
+    setVoiceActive(true);
+
     const loadVoices = () => {
       const voices = speechSynthesis.getVoices();
       const italianVoice = voices.find(voice => voice.lang.startsWith('it'));
+
+      console.log('Available voices:', voices.length);
+      console.log('Italian voice found:', !!italianVoice);
 
       const utterance = new SpeechSynthesisUtterance(
         "Benvenuto, sono la guida turistica di questo bellissimo borgo. Come posso aiutarti?"
@@ -74,6 +101,18 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
       if (italianVoice) {
         utterance.voice = italianVoice;
       }
+
+      utterance.onstart = () => {
+        console.log('Speech synthesis started');
+      };
+
+      utterance.onend = () => {
+        console.log('Speech synthesis ended');
+      };
+
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+      };
 
       utteranceRef.current = utterance;
       speechSynthesis.speak(utterance);
@@ -401,6 +440,12 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
             <p className="text-2xl text-white font-medium max-w-3xl mx-auto px-8 leading-relaxed text-center">
               Benvenuto, sono la guida turistica di questo bellissimo borgo. Come posso aiutarti?
             </p>
+            {audioError && (
+              <p className="text-sm text-amber-300 mt-4">Using text-to-speech</p>
+            )}
+            {isMuted && (
+              <p className="text-sm text-blue-300 mt-4">Audio is muted</p>
+            )}
           </div>
         )}
       </div>
