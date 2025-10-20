@@ -176,11 +176,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
   };
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden transition-colors duration-1000 ${
-      phase === 'voice'
-        ? 'bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50'
-        : 'bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900'
-    }`}>
+    <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 z-50 flex items-center justify-center overflow-hidden">
       {phase === 'start' && (
         <div
           onClick={startAnimation}
@@ -428,8 +424,8 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
             <div className="relative mb-8">
               <div className="relative inline-flex items-center justify-center">
                 <div
-                  className={`absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full blur-xl transition-all duration-700 ${
-                    voiceActive ? 'scale-150 opacity-40' : 'scale-100 opacity-20'
+                  className={`absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full blur-xl transition-all duration-700 ${
+                    voiceActive ? 'scale-150 opacity-30' : 'scale-100 opacity-20'
                   }`}
                   style={{
                     animation: voiceActive ? 'pulse 2s ease-in-out infinite' : 'none',
@@ -437,7 +433,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
                 ></div>
 
                 <div
-                  className={`relative w-32 h-32 rounded-full bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 shadow-2xl flex items-center justify-center transition-all duration-500 ${
+                  className={`relative w-32 h-32 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 shadow-2xl flex items-center justify-center transition-all duration-500 ${
                     voiceActive ? 'scale-110' : 'scale-100'
                   }`}
                 >
