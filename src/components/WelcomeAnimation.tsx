@@ -40,15 +40,30 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
   }, [onComplete]);
 
   const playWelcomeMessage = () => {
-    const utterance = new SpeechSynthesisUtterance(
-      "Benvenuto, sono la guida turistica di questo bellissimo borgo. Come posso aiutarti?"
-    );
-    utterance.lang = 'it-IT';
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utteranceRef.current = utterance;
+    const loadVoices = () => {
+      const voices = speechSynthesis.getVoices();
+      const italianVoice = voices.find(voice => voice.lang.startsWith('it'));
 
-    speechSynthesis.speak(utterance);
+      const utterance = new SpeechSynthesisUtterance(
+        "Benvenuto, sono la guida turistica di questo bellissimo borgo. Come posso aiutarti?"
+      );
+      utterance.lang = 'it-IT';
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+
+      if (italianVoice) {
+        utterance.voice = italianVoice;
+      }
+
+      utteranceRef.current = utterance;
+      speechSynthesis.speak(utterance);
+    };
+
+    if (speechSynthesis.getVoices().length > 0) {
+      loadVoices();
+    } else {
+      speechSynthesis.addEventListener('voiceschanged', loadVoices, { once: true });
+    }
   };
 
   const handleSkip = () => {
@@ -329,10 +344,8 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
               </div>
             </div>
 
-            <p className="text-2xl text-gray-700 font-medium max-w-2xl mx-auto px-6 leading-relaxed">
-              Benvenuto, sono la guida turistica di questo bellissimo borgo.
-              <br />
-              Come posso aiutarti?
+            <p className="text-2xl text-gray-700 font-medium max-w-3xl mx-auto px-8 leading-relaxed text-center">
+              Benvenuto, sono la guida turistica di questo bellissimo borgo. Come posso aiutarti?
             </p>
           </div>
         )}

@@ -206,17 +206,7 @@ export default function ChatInterface() {
   };
 
   if (!initialized) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-        <div className="text-center">
-          <div className="relative inline-block">
-            <Globe className="w-16 h-16 text-blue-400 animate-pulse" />
-            <Sparkles className="w-6 h-6 text-amber-400 absolute -top-2 -right-2 animate-bounce" />
-          </div>
-          <p className="mt-4 text-blue-200 font-medium">Initializing your guide...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (showWelcome) {
