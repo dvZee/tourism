@@ -94,6 +94,7 @@ export default function ChatInterface() {
       setInitialized(true);
     } catch (error) {
       console.error('Failed to initialize chat:', error);
+      setInitialized(true);
     }
   };
 
