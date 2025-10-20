@@ -25,7 +25,10 @@ export default function ChatInterface() {
   const [showChatHistory, setShowChatHistory] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [conversationId, setConversationId] = useState<string>('');
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(() => {
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+    return !hasSeenWelcome;
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -218,8 +221,14 @@ export default function ChatInterface() {
   if (showWelcome) {
     return (
       <WelcomeAnimation
-        onComplete={() => setShowWelcome(false)}
-        onSkip={() => setShowWelcome(false)}
+        onComplete={() => {
+          localStorage.setItem('hasSeenWelcome', 'true');
+          setShowWelcome(false);
+        }}
+        onSkip={() => {
+          localStorage.setItem('hasSeenWelcome', 'true');
+          setShowWelcome(false);
+        }}
       />
     );
   }
