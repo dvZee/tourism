@@ -25,7 +25,9 @@ export type Persona = {
 export type Conversation = {
   id: string;
   persona_id: string | null;
+  user_id: string | null;
   language: string;
+  title: string;
   created_at: string;
   updated_at: string;
 };

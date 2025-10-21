@@ -29,10 +29,14 @@ Deno.serve(async (req: Request) => {
   try {
     const { messages, language }: RequestBody = await req.json();
 
+    console.log('Chat function called with', messages.length, 'messages in language:', language);
+
     if (!OPENAI_API_KEY) {
+      console.error('OpenAI API key not configured');
       throw new Error('OpenAI API key not configured');
     }
 
+    console.log('Calling OpenAI API...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -50,11 +54,13 @@ Deno.serve(async (req: Request) => {
     if (!response.ok) {
       const error = await response.text();
       console.error('OpenAI API error:', error);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`OpenAI API error: ${response.status} - ${error}`);
     }
 
     const data = await response.json();
     const assistantMessage = data.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+
+    console.log('OpenAI response received successfully');
 
     return new Response(
       JSON.stringify({
@@ -74,6 +80,7 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        content: "I'm having trouble connecting right now. Please try again in a moment.",
       }),
       {
         status: 500,

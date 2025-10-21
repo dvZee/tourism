@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Loader2, Globe, User, Sparkles, MapPin, BookOpen, Menu, History, LogOut, UserCircle, Plus } from 'lucide-react';
+import { Send, Loader2, Globe, User, Sparkles, MapPin, BookOpen, PanelLeftOpen, History, LogOut, UserCircle, Plus } from 'lucide-react';
 import { AIAgent, createConversation, getPersonas, loadConversation } from '../lib/ai-agent';
 import { getCurrentUser, signOut, getUserProfile } from '../lib/auth';
 import type { Persona, Message } from '../lib/supabase';
@@ -325,7 +325,7 @@ export default function ChatInterface() {
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
                 className="sm:hidden p-2 hover:bg-white/20 text-white rounded-xl transition-all"
               >
-                <Menu className="w-5 h-5" />
+                <PanelLeftOpen className="w-5 h-5" />
               </button>
             </div>
           </div>

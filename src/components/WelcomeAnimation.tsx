@@ -8,7 +8,6 @@ interface WelcomeAnimationProps {
 
 export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimationProps) {
   const [phase, setPhase] = useState<'start' | 'illustration' | 'greeting' | 'voice'>('start');
-  const [showSkip, setShowSkip] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
   const [audioError, setAudioError] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -21,7 +20,6 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
     animationStarted.current = true;
 
     setPhase('illustration');
-    setShowSkip(true);
 
     // Preload audio
     const audio = new Audio('/audio/welcome.mp3');

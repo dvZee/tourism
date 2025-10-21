@@ -32,12 +32,19 @@ export default function ChatHistory({
     try {
       const { data, error } = await supabase
         .from('conversations')
-        .select('*')
+        .select(`
+          *,
+          messages(id)
+        `)
         .eq('user_id', userId)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      setConversations(data || []);
+
+      const conversationsWithMessages = (data || []).filter(
+        (conv: any) => conv.messages && conv.messages.length > 0
+      );
+      setConversations(conversationsWithMessages);
     } catch (error) {
       console.error('Failed to load conversations:', error);
     } finally {

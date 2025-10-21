@@ -123,7 +123,22 @@ ${this.persona.tone_instructions}`;
 
     await this.saveMessage('assistant', response.content);
 
+    if (history.length === 1) {
+      await this.updateConversationTitle(userMessage);
+    }
+
     return response;
+  }
+
+  private async updateConversationTitle(firstMessage: string) {
+    const title = firstMessage.length > 50
+      ? firstMessage.substring(0, 50) + '...'
+      : firstMessage;
+
+    await supabase
+      .from('conversations')
+      .update({ title })
+      .eq('id', this.conversationId);
   }
 
   private async callAI(messages: Array<{ role: string; content: string }>): Promise<AIResponse> {
@@ -132,7 +147,20 @@ ${this.persona.tone_instructions}`;
         body: { messages, language: this.language },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+
+      if (data?.error) {
+        console.error('AI API error:', data.error);
+        throw new Error(data.error);
+      }
+
+      if (data?.content) {
+        return { content: data.content, sources: data.sources || [] };
+      }
+
       return data;
     } catch (error) {
       console.error('AI call failed:', error);
