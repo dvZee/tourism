@@ -217,48 +217,42 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
         </div>
       )}
 
-      <div className="relative w-full h-full flex items-center justify-center">
+      <div className="relative w-full h-full flex items-center justify-center px-4">
         {phase === 'illustration' && (
-          <div className="animate-fade-in">
+          <div className="animate-fade-in w-full max-w-4xl">
             <img
               src="/animation.gif"
               alt="Village animation"
-              className="mx-auto"
+              className="w-full h-auto object-contain"
               style={{
-                maxWidth: '600px',
-                width: '90%',
-                height: 'auto',
+                imageRendering: 'crisp-edges',
               }}
             />
           </div>
         )}
 
         {phase === 'greeting' && (
-          <div className="animate-fade-in text-center">
+          <div className="animate-fade-in text-center w-full max-w-4xl">
             <img
               src="/animation.gif"
               alt="Welcome animation"
-              className="mx-auto"
+              className="w-full h-auto object-contain"
               style={{
-                maxWidth: '600px',
-                width: '90%',
-                height: 'auto',
+                imageRendering: 'crisp-edges',
               }}
             />
           </div>
         )}
 
         {phase === 'voice' && (
-          <div className="animate-fade-in text-center">
+          <div className="animate-fade-in text-center w-full">
             <div className="relative mb-8 flex justify-center">
               <img
                 src="/animation_2.gif"
                 alt="Tour guide animation"
-                className="mx-auto"
+                className="w-full max-w-2xl h-auto object-contain"
                 style={{
-                  maxWidth: '400px',
-                  width: '70%',
-                  height: 'auto',
+                  imageRendering: 'crisp-edges',
                 }}
               />
             </div>

@@ -228,14 +228,14 @@ export default function ChatInterface() {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="relative group">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 rounded-xl flex items-center justify-center shadow-lg transform transition-transform group-hover:scale-110">
+                <div className="w-12 h-12 bg-accent-primary rounded-xl flex items-center justify-center shadow-lg transform transition-transform group-hover:scale-110">
                   <Globe className="w-6 h-6 text-white" />
                 </div>
-                <Sparkles className="w-3 h-3 text-amber-300 absolute -top-0.5 -right-0.5 animate-pulse" />
+                <Sparkles className="w-3 h-3 text-accent-primary absolute -top-0.5 -right-0.5 animate-pulse" />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-lg sm:text-xl font-bold text-white">{getTranslation(language, 'appTitle')}</h1>
-                <p className="text-xs text-blue-200 flex items-center gap-1">
+                <p className="text-xs text-white/70 flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   {getTranslation(language, 'appSubtitle')}
                 </p>
@@ -248,8 +248,8 @@ export default function ChatInterface() {
                   onClick={() => handleLanguageChange('en')}
                   className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
                     language === 'en'
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50 scale-105'
-                      : 'text-blue-200 hover:bg-white/10 hover:text-white'
+                      ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/50 scale-105'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   {getTranslation(language, 'english')}
@@ -258,8 +258,8 @@ export default function ChatInterface() {
                   onClick={() => handleLanguageChange('it')}
                   className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
                     language === 'it'
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50 scale-105'
-                      : 'text-blue-200 hover:bg-white/10 hover:text-white'
+                      ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/50 scale-105'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   {getTranslation(language, 'italian')}
@@ -268,8 +268,8 @@ export default function ChatInterface() {
                   onClick={() => handleLanguageChange('es')}
                   className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
                     language === 'es'
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50 scale-105'
-                      : 'text-blue-200 hover:bg-white/10 hover:text-white'
+                      ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/50 scale-105'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   {getTranslation(language, 'spanish')}
@@ -308,7 +308,7 @@ export default function ChatInterface() {
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/50 transition-all"
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 bg-accent-primary text-white rounded-xl font-medium hover:shadow-lg hover:shadow-accent-primary/50 transition-all"
                 >
                   <UserCircle className="w-5 h-5" />
                   <span className="text-sm">{getTranslation(language, 'signIn')}</span>
@@ -326,7 +326,7 @@ export default function ChatInterface() {
 
           {user && personas.length > 0 && (
             <div className="hidden md:flex items-center justify-center gap-2 mt-3 pt-3 border-t border-white/10">
-              <span className="text-xs text-blue-200 font-medium">Persona:</span>
+              <span className="text-xs text-white/70 font-medium">Persona:</span>
               <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm p-1 rounded-lg border border-white/10">
                 {personas.map((persona) => (
                   <button
@@ -334,8 +334,8 @@ export default function ChatInterface() {
                     onClick={() => handlePersonaChange(persona.id)}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-300 ${
                       selectedPersona === persona.id
-                        ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-md'
-                        : 'text-blue-200 hover:bg-white/10 hover:text-white'
+                        ? 'bg-accent-primary text-white shadow-md'
+                        : 'text-white/70 hover:bg-white/10 hover:text-white'
                     }`}
                   >
                     {persona.name.charAt(0).toUpperCase() + persona.name.slice(1)}
@@ -344,7 +344,7 @@ export default function ChatInterface() {
                 {selectedPersona && (
                   <button
                     onClick={() => handlePersonaChange('')}
-                    className="px-3 py-1 rounded-md text-xs font-medium text-blue-200 hover:bg-white/10 hover:text-white transition-all duration-300"
+                    className="px-3 py-1 rounded-md text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-300"
                   >
                     Default
                   </button>
@@ -360,8 +360,8 @@ export default function ChatInterface() {
                   onClick={() => handleLanguageChange('en')}
                   className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                     language === 'en'
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-                      : 'bg-white/10 text-blue-200'
+                      ? 'bg-accent-primary text-white'
+                      : 'bg-white/10 text-white/70'
                   }`}
                 >
                   {getTranslation(language, 'english')}
@@ -370,8 +370,8 @@ export default function ChatInterface() {
                   onClick={() => handleLanguageChange('it')}
                   className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                     language === 'it'
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-                      : 'bg-white/10 text-blue-200'
+                      ? 'bg-accent-primary text-white'
+                      : 'bg-white/10 text-white/70'
                   }`}
                 >
                   {getTranslation(language, 'italian')}
@@ -380,8 +380,8 @@ export default function ChatInterface() {
                   onClick={() => handleLanguageChange('es')}
                   className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                     language === 'es'
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-                      : 'bg-white/10 text-blue-200'
+                      ? 'bg-accent-primary text-white'
+                      : 'bg-white/10 text-white/70'
                   }`}
                 >
                   {getTranslation(language, 'spanish')}
@@ -432,7 +432,7 @@ export default function ChatInterface() {
                     setShowAuthModal(true);
                     setShowMobileMenu(false);
                   }}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl text-xs font-medium"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-accent-primary text-white rounded-xl text-xs font-medium"
                 >
                   <UserCircle className="w-4 h-4" />
                   Sign In
@@ -448,43 +448,43 @@ export default function ChatInterface() {
           {messages.length === 0 ? (
             <div className="text-center py-12 sm:py-16 animate-fade-in">
               <div className="relative inline-block mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full blur-2xl opacity-30 animate-pulse"></div>
-                <div className="relative inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 rounded-full shadow-2xl">
+                <div className="absolute inset-0 bg-accent-primary rounded-full blur-2xl opacity-30 animate-pulse"></div>
+                <div className="relative inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-accent-primary rounded-full shadow-2xl">
                   <Globe className="w-10 h-10 sm:w-12 sm:h-12 text-white animate-pulse" />
                 </div>
               </div>
               <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3">
                 {getTranslation(language, 'welcomeTitle')}
               </h2>
-              <p className="text-blue-200 text-base sm:text-lg mb-8 max-w-2xl mx-auto leading-relaxed px-4">
+              <p className="text-white/80 text-base sm:text-lg mb-8 max-w-2xl mx-auto leading-relaxed px-4">
                 {getTranslation(language, 'welcomeSubtitle')}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto px-4">
                 <button
                   onClick={() => setInput(getTranslation(language, 'exampleColosseum'))}
-                  className="group p-4 sm:p-6 text-left bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 hover:border-amber-400/50 hover:shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 hover:scale-105"
+                  className="group p-4 sm:p-6 text-left bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 hover:border-accent-primary/50 hover:shadow-2xl hover:shadow-accent-primary/20 transition-all duration-300 hover:scale-105"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="p-2 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg group-hover:scale-110 transition-transform">
+                    <div className="p-2 bg-accent-primary rounded-lg group-hover:scale-110 transition-transform">
                       <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div>
                       <p className="font-semibold text-white mb-1 text-sm sm:text-base">{getTranslation(language, 'exampleColosseum')}</p>
-                      <p className="text-xs sm:text-sm text-blue-200">{getTranslation(language, 'exampleColeosseumSubtitle')}</p>
+                      <p className="text-xs sm:text-sm text-white/70">{getTranslation(language, 'exampleColeosseumSubtitle')}</p>
                     </div>
                   </div>
                 </button>
                 <button
                   onClick={() => setInput(getTranslation(language, 'exampleLegends'))}
-                  className="group p-4 sm:p-6 text-left bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 hover:border-amber-400/50 hover:shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 hover:scale-105"
+                  className="group p-4 sm:p-6 text-left bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 hover:border-accent-primary/50 hover:shadow-2xl hover:shadow-accent-primary/20 transition-all duration-300 hover:scale-105"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="p-2 bg-gradient-to-br from-rose-400 to-pink-500 rounded-lg group-hover:scale-110 transition-transform">
+                    <div className="p-2 bg-accent-primary rounded-lg group-hover:scale-110 transition-transform">
                       <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div>
                       <p className="font-semibold text-white mb-1 text-sm sm:text-base">{getTranslation(language, 'exampleLegends')}</p>
-                      <p className="text-xs sm:text-sm text-blue-200">{getTranslation(language, 'exampleLegendsSubtitle')}</p>
+                      <p className="text-xs sm:text-sm text-white/70">{getTranslation(language, 'exampleLegendsSubtitle')}</p>
                     </div>
                   </div>
                 </button>
@@ -503,8 +503,8 @@ export default function ChatInterface() {
                   <div
                     className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-lg ${
                       message.role === 'user'
-                        ? 'bg-gradient-to-br from-blue-500 to-blue-600'
-                        : 'bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500'
+                        ? 'bg-accent-primary'
+                        : 'bg-accent-primary'
                     }`}
                   >
                     {message.role === 'user' ? (
@@ -516,7 +516,7 @@ export default function ChatInterface() {
                   <div
                     className={`flex-1 max-w-2xl p-4 sm:p-5 rounded-2xl shadow-xl transition-all duration-300 hover:scale-[1.02] ${
                       message.role === 'user'
-                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+                        ? 'bg-accent-primary text-white'
                         : 'bg-white/95 backdrop-blur-sm text-gray-900 border border-white/20'
                     }`}
                   >
@@ -526,16 +526,16 @@ export default function ChatInterface() {
               ))}
               {loading && (
                 <div className="flex gap-3 sm:gap-4 animate-slide-up">
-                  <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 flex items-center justify-center shadow-lg">
+                  <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-accent-primary flex items-center justify-center shadow-lg">
                     <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div className="flex-1 max-w-2xl p-4 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-sm shadow-xl border border-white/20">
                     <div className="flex items-center gap-2">
-                      <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
+                      <Loader2 className="w-5 h-5 animate-spin text-accent-primary" />
                       <div className="flex gap-1">
-                        <span className="w-2 h-2 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                        <span className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                        <span className="w-2 h-2 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                        <span className="w-2 h-2 bg-accent-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                        <span className="w-2 h-2 bg-accent-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                        <span className="w-2 h-2 bg-accent-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                       </div>
                     </div>
                   </div>
@@ -557,15 +557,15 @@ export default function ChatInterface() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={getTranslation(language, 'inputPlaceholder')}
-                className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent text-white placeholder-blue-200/60 transition-all disabled:opacity-50 text-sm sm:text-base"
+                className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-white placeholder-white/60 transition-all disabled:opacity-50 text-sm sm:text-base"
                 disabled={loading}
               />
-              <Sparkles className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-amber-300 opacity-50" />
+              <Sparkles className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-accent-primary opacity-50" />
             </div>
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim()}
-              className="relative px-4 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white rounded-xl sm:rounded-2xl hover:shadow-2xl hover:shadow-amber-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2 disabled:hover:shadow-none hover:scale-105 active:scale-95 font-medium text-sm sm:text-base"
+              className="relative px-4 sm:px-8 py-3 sm:py-4 bg-accent-primary text-white rounded-xl sm:rounded-2xl hover:shadow-2xl hover:shadow-accent-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2 disabled:hover:shadow-none hover:scale-105 active:scale-95 font-medium text-sm sm:text-base"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />

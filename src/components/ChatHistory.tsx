@@ -70,12 +70,12 @@ export default function ChatHistory({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 animate-fade-in font-breton">
       <div className="bg-white/95 backdrop-blur-xl rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg max-h-[85vh] border border-white/20 flex flex-col animate-slide-up">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-blue-600" />
-            <h2 className="text-xl font-bold text-gray-900">Chat History</h2>
+            <MessageSquare className="w-5 h-5 text-accent-primary" />
+            <h2 className="text-xl font-bold text-bg-primary">Chat History</h2>
           </div>
           <button
             onClick={onClose}
@@ -88,7 +88,7 @@ export default function ChatHistory({
         <div className="flex-1 overflow-y-auto p-4">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <Loader2 className="w-8 h-8 animate-spin text-accent-primary" />
             </div>
           ) : conversations.length === 0 ? (
             <div className="text-center py-12">
@@ -109,7 +109,7 @@ export default function ChatHistory({
                   }}
                   className={`w-full p-4 rounded-xl text-left transition-all group hover:scale-[1.02] ${
                     currentConversationId === conversation.id
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
+                      ? 'bg-accent-primary text-white shadow-lg'
                       : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
                   }`}
                 >
@@ -121,7 +121,7 @@ export default function ChatHistory({
                       <p
                         className={`text-sm mt-1 ${
                           currentConversationId === conversation.id
-                            ? 'text-blue-100'
+                            ? 'text-white/80'
                             : 'text-gray-500'
                         }`}
                       >
@@ -136,7 +136,7 @@ export default function ChatHistory({
                       onClick={(e) => deleteConversation(conversation.id, e)}
                       className={`p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${
                         currentConversationId === conversation.id
-                          ? 'hover:bg-blue-400'
+                          ? 'hover:bg-accent-primary/80'
                           : 'hover:bg-gray-200'
                       }`}
                     >
