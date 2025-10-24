@@ -1,29 +1,31 @@
 export default function VillageAnimation() {
   return (
-    <div className="flex items-center justify-center w-full h-full py-8">
-      <svg viewBox="0 0 500 500" className="w-full h-auto" style={{ maxWidth: '400px', maxHeight: '400px' }}>
+    <div className="flex items-center justify-center w-full h-full">
+      <svg viewBox="0 0 500 500" className="w-full h-auto" style={{ maxWidth: '350px', maxHeight: '350px' }}>
         <defs>
           <style>{`
             @keyframes sunMove {
               0%, 100% { transform: translate(0, 0); }
-              50% { transform: translate(0, -10px); }
+              50% { transform: translate(0, -8px); }
             }
             @keyframes sunRays {
-              0%, 100% { transform: rotate(0deg); }
+              0% { transform: rotate(0deg); }
               100% { transform: rotate(360deg); }
             }
             @keyframes cloudFloat {
               0%, 100% { transform: translateX(0); }
-              50% { transform: translateX(10px); }
+              50% { transform: translateX(8px); }
+            }
+            @keyframes duckBob {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-3px); }
             }
             .sun-group { animation: sunMove 3s ease-in-out infinite; }
             .sun-rays { animation: sunRays 20s linear infinite; }
-            .cloud { animation: cloudFloat 5s ease-in-out infinite; }
+            .cloud { animation: cloudFloat 4s ease-in-out infinite; }
+            .duck { animation: duckBob 2s ease-in-out infinite; }
           `}</style>
         </defs>
-
-        {/* Sky background - matching screenshot color */}
-        <rect width="500" height="500" fill="#5A7C88"/>
 
         {/* Animated Sun */}
         <g className="sun-group" style={{ transformOrigin: '200px 100px' }}>
@@ -40,7 +42,7 @@ export default function VillageAnimation() {
           <circle cx="200" cy="100" r="35" fill="#F5C544"/>
         </g>
 
-        {/* Clouds */}
+        {/* Animated Clouds */}
         <g className="cloud" style={{ animationDelay: '0s' }}>
           <ellipse cx="320" cy="110" rx="22" ry="14" fill="white"/>
           <ellipse cx="340" cy="115" rx="18" ry="12" fill="white"/>
@@ -53,24 +55,45 @@ export default function VillageAnimation() {
           <ellipse cx="432" cy="155" rx="16" ry="11" fill="white"/>
         </g>
 
-        {/* Island circle base - water */}
-        <circle cx="250" cy="320" r="180" fill="#5DADA6"/>
-
-        {/* Island land part */}
-        <path d="M 250 320 m -180 0 a 180 180 0 0 1 360 0 a 180 180 0 0 1 -360 0 z" fill="#5DADA6"/>
-        <ellipse cx="250" cy="320" rx="180" ry="40" fill="#4A9B95" opacity="0.4"/>
-
-        {/* Ducks in water */}
-        <g transform="translate(200, 380)">
-          <ellipse cx="0" cy="0" rx="10" ry="6" fill="white"/>
-          <circle cx="-4" cy="-3" r="5" fill="white"/>
-          <path d="M -7 -3 Q -10 -3 -10 0" stroke="#F5C544" strokeWidth="1.5" fill="none"/>
+        <g className="cloud" style={{ animationDelay: '1s' }}>
+          <ellipse cx="60" cy="180" rx="20" ry="12" fill="white"/>
+          <ellipse cx="78" cy="184" rx="16" ry="10" fill="white"/>
+          <ellipse cx="88" cy="180" rx="12" ry="8" fill="white"/>
         </g>
 
-        <g transform="translate(290, 385)">
-          <ellipse cx="0" cy="0" rx="10" ry="6" fill="white"/>
-          <circle cx="-4" cy="-3" r="5" fill="white"/>
-          <path d="M -7 -3 Q -10 -3 -10 0" stroke="#F5C544" strokeWidth="1.5" fill="none"/>
+        {/* Island circle base - water */}
+        <circle cx="250" cy="320" r="180" fill="#5DADA6"/>
+        <ellipse cx="250" cy="320" rx="180" ry="40" fill="#4A9B95" opacity="0.4"/>
+
+        {/* Animated Ducks in water */}
+        <g className="duck" style={{ animationDelay: '0s' }}>
+          <g transform="translate(200, 380)">
+            <ellipse cx="0" cy="0" rx="10" ry="6" fill="white"/>
+            <circle cx="-4" cy="-3" r="5" fill="white"/>
+            <path d="M -7 -3 Q -10 -3 -10 0" stroke="#F5C544" strokeWidth="1.5" fill="none"/>
+          </g>
+        </g>
+
+        <g className="duck" style={{ animationDelay: '0.5s' }}>
+          <g transform="translate(290, 385)">
+            <ellipse cx="0" cy="0" rx="10" ry="6" fill="white"/>
+            <circle cx="-4" cy="-3" r="5" fill="white"/>
+            <path d="M -7 -3 Q -10 -3 -10 0" stroke="#F5C544" strokeWidth="1.5" fill="none"/>
+          </g>
+        </g>
+
+        {/* Baby ducks */}
+        <g className="duck" style={{ animationDelay: '0.3s' }}>
+          <ellipse cx="315" cy="390" rx="5" ry="3" fill="white"/>
+          <circle cx="313" cy="388" r="3" fill="white"/>
+        </g>
+        <g className="duck" style={{ animationDelay: '0.6s' }}>
+          <ellipse cx="330" cy="392" rx="5" ry="3" fill="white"/>
+          <circle cx="328" cy="390" r="3" fill="white"/>
+        </g>
+        <g className="duck" style={{ animationDelay: '0.9s' }}>
+          <ellipse cx="345" cy="394" rx="5" ry="3" fill="white"/>
+          <circle cx="343" cy="392" r="3" fill="white"/>
         </g>
 
         {/* Background mountain */}
@@ -78,7 +101,6 @@ export default function VillageAnimation() {
         <path d="M 220 180 Q 235 165 250 185 L 245 200 L 225 200 Z" fill="#E8DDD1"/>
 
         {/* Buildings */}
-
         {/* Left tower with arched windows */}
         <rect x="130" y="240" width="50" height="80" fill="#E8DDD1" rx="3"/>
         <path d="M 155 215 L 130 240 L 180 240 Z" fill="#B87B6E"/>
