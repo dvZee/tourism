@@ -174,20 +174,22 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 z-50 flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 bg-bg-primary z-50 flex items-center justify-center overflow-hidden">
       {phase === 'start' && (
         <div
           onClick={startAnimation}
-          className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-50 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900"
+          className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-50 bg-bg-primary"
         >
           <div className="text-center animate-fade-in">
             <div className="mb-8">
-              <svg className="w-24 h-24 mx-auto text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-              </svg>
+              <img
+                src="/icon_option_2.png"
+                alt="Start"
+                className="w-32 h-32 mx-auto"
+              />
             </div>
-            <h2 className="text-4xl font-bold text-white mb-4">Tocca per iniziare</h2>
-            <p className="text-blue-200 text-lg">Click anywhere to start the experience</p>
+            <h2 className="text-4xl font-breton font-semibold text-white mb-4">Tocca per iniziare</h2>
+            <p className="text-white/80 text-lg font-breton">Click anywhere to start the experience</p>
           </div>
         </div>
       )}
@@ -406,14 +408,16 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
 
         {phase === 'greeting' && (
           <div className="animate-fade-in text-center">
-            <h1
-              className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-amber-400 to-orange-500"
+            <img
+              src="/animation.gif"
+              alt="Welcome animation"
+              className="mx-auto"
               style={{
-                animation: 'scaleIn 1s ease-out forwards',
+                maxWidth: '600px',
+                width: '90%',
+                height: 'auto',
               }}
-            >
-              CIAO
-            </h1>
+            />
           </div>
         )}
 
@@ -422,7 +426,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
             <div className="relative mb-8">
               <div className="relative inline-flex items-center justify-center">
                 <div
-                  className={`absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full blur-xl transition-all duration-700 ${
+                  className={`absolute inset-0 bg-accent-primary rounded-full blur-xl transition-all duration-700 ${
                     voiceActive ? 'scale-150 opacity-30' : 'scale-100 opacity-20'
                   }`}
                   style={{
@@ -431,7 +435,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
                 ></div>
 
                 <div
-                  className={`relative w-32 h-32 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 shadow-2xl flex items-center justify-center transition-all duration-500 ${
+                  className={`relative w-32 h-32 rounded-full bg-accent-primary shadow-2xl flex items-center justify-center transition-all duration-500 ${
                     voiceActive ? 'scale-110' : 'scale-100'
                   }`}
                 >
@@ -481,9 +485,20 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
               </div>
             </div>
 
-            <p className="text-2xl text-white font-medium max-w-3xl mx-auto px-8 leading-relaxed text-center">
-              Benvenuto, sono la guida turistica di questo bellissimo borgo. Come posso aiutarti?
-            </p>
+            <div className="text-center max-w-3xl mx-auto px-8">
+              <h1 className="text-5xl font-breton font-bold text-accent-primary mb-4">
+                Benvenuto!
+              </h1>
+              <p className="text-2xl font-breton text-white mb-2">
+                Sono la <span className="text-accent-primary font-semibold">guida turistica</span>
+              </p>
+              <p className="text-2xl font-breton text-white mb-4">
+                di questo <span className="text-white font-bold">bellissimo borgo</span>
+              </p>
+              <p className="text-2xl font-breton text-white">
+                Come posso aiutarti?
+              </p>
+            </div>
             {audioError && (
               <p className="text-sm text-amber-300 mt-4">Using text-to-speech</p>
             )}
