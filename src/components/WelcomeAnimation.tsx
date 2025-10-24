@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import VillageAnimation from './VillageAnimation';
+import CiaoAnimation from './CiaoAnimation';
 import WelcomeTextAnimation from './WelcomeTextAnimation';
 
 interface WelcomeAnimationProps {
@@ -9,7 +10,7 @@ interface WelcomeAnimationProps {
 }
 
 export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimationProps) {
-  const [phase, setPhase] = useState<'start' | 'illustration' | 'greeting' | 'voice'>('start');
+  const [phase, setPhase] = useState<'start' | 'village' | 'ciao' | 'welcome'>('start');
   const [voiceActive, setVoiceActive] = useState(false);
   const [audioError, setAudioError] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -21,30 +22,30 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
     if (animationStarted.current) return;
     animationStarted.current = true;
 
-    setPhase('illustration');
+    setPhase('village');
 
     const audio = new Audio('/audio/welcome.mp3');
     audio.preload = 'auto';
     audio.load();
     audioRef.current = audio;
 
-    const illustrationTimer = setTimeout(() => {
-      setPhase('greeting');
+    const villageTimer = setTimeout(() => {
+      setPhase('ciao');
     }, 3000);
 
-    const greetingTimer = setTimeout(() => {
-      setPhase('voice');
+    const ciaoTimer = setTimeout(() => {
+      setPhase('welcome');
       setVoiceActive(true);
       playWelcomeMessage();
-    }, 5500);
+    }, 4500);
 
     const completeTimer = setTimeout(() => {
       onComplete();
     }, 12000);
 
     return () => {
-      clearTimeout(illustrationTimer);
-      clearTimeout(greetingTimer);
+      clearTimeout(villageTimer);
+      clearTimeout(ciaoTimer);
       clearTimeout(completeTimer);
       if (speechSynthesis.speaking) {
         speechSynthesis.cancel();
@@ -164,7 +165,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
       }
       setVoiceActive(false);
     } else {
-      if (phase === 'voice') {
+      if (phase === 'welcome') {
         playWelcomeMessage();
       }
     }
@@ -219,21 +220,21 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
         </div>
       )}
 
-      <div className="relative w-full h-full flex items-center justify-center px-4">
-        {phase === 'illustration' && (
-          <div className="animate-fade-in w-full">
+      <div className="relative w-full h-full flex items-center justify-center">
+        {phase === 'village' && (
+          <div className="animate-fade-in w-full h-full">
             <VillageAnimation />
           </div>
         )}
 
-        {phase === 'greeting' && (
-          <div className="animate-fade-in w-full">
-            <VillageAnimation />
+        {phase === 'ciao' && (
+          <div className="animate-fade-in w-full h-full">
+            <CiaoAnimation />
           </div>
         )}
 
-        {phase === 'voice' && (
-          <div className="animate-fade-in w-full">
+        {phase === 'welcome' && (
+          <div className="animate-fade-in w-full h-full">
             <WelcomeTextAnimation />
             {audioError && (
               <p className="text-sm text-accent-primary mt-4 font-breton text-center">Using text-to-speech</p>
