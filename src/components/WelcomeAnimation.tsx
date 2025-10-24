@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import VillageAnimation from './VillageAnimation';
+import WelcomeTextAnimation from './WelcomeTextAnimation';
 
 interface WelcomeAnimationProps {
   onComplete: () => void;
@@ -219,63 +221,25 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
 
       <div className="relative w-full h-full flex items-center justify-center px-4">
         {phase === 'illustration' && (
-          <div className="animate-fade-in w-full max-w-4xl">
-            <img
-              src="/animation.gif"
-              alt="Village animation"
-              className="w-full h-auto object-contain"
-              style={{
-                imageRendering: 'crisp-edges',
-              }}
-            />
+          <div className="animate-fade-in w-full">
+            <VillageAnimation />
           </div>
         )}
 
         {phase === 'greeting' && (
-          <div className="animate-fade-in text-center w-full max-w-4xl">
-            <img
-              src="/animation.gif"
-              alt="Welcome animation"
-              className="w-full h-auto object-contain"
-              style={{
-                imageRendering: 'crisp-edges',
-              }}
-            />
+          <div className="animate-fade-in w-full">
+            <VillageAnimation />
           </div>
         )}
 
         {phase === 'voice' && (
-          <div className="animate-fade-in text-center w-full">
-            <div className="relative mb-8 flex justify-center">
-              <img
-                src="/animation_2.gif"
-                alt="Tour guide animation"
-                className="w-full max-w-2xl h-auto object-contain"
-                style={{
-                  imageRendering: 'crisp-edges',
-                }}
-              />
-            </div>
-
-            <div className="text-center max-w-3xl mx-auto px-8">
-              <h1 className="text-5xl font-breton font-bold text-accent-primary mb-4">
-                Benvenuto!
-              </h1>
-              <p className="text-2xl font-breton text-white mb-2">
-                Sono la <span className="text-accent-primary font-semibold">guida turistica</span>
-              </p>
-              <p className="text-2xl font-breton text-white mb-4">
-                di questo <span className="text-white font-bold">bellissimo borgo</span>
-              </p>
-              <p className="text-2xl font-breton text-white">
-                Come posso aiutarti?
-              </p>
-            </div>
+          <div className="animate-fade-in w-full">
+            <WelcomeTextAnimation />
             {audioError && (
-              <p className="text-sm text-accent-primary mt-4 font-breton">Using text-to-speech</p>
+              <p className="text-sm text-accent-primary mt-4 font-breton text-center">Using text-to-speech</p>
             )}
             {isMuted && (
-              <p className="text-sm text-white/70 mt-4 font-breton">Audio is muted</p>
+              <p className="text-sm text-white/70 mt-4 font-breton text-center">Audio is muted</p>
             )}
           </div>
         )}
