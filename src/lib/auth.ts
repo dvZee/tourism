@@ -64,3 +64,39 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
 
   if (error) throw error;
 }
+
+export async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}`,
+    },
+  });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function signInWithApple() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'apple',
+    options: {
+      redirectTo: `${window.location.origin}`,
+    },
+  });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function signInWithFacebook() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'facebook',
+    options: {
+      redirectTo: `${window.location.origin}`,
+    },
+  });
+
+  if (error) throw error;
+  return data;
+}
