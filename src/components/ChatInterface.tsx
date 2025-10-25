@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Loader2, Globe, User, Sparkles, MapPin, BookOpen, PanelLeftOpen, History, LogOut, UserCircle, Plus, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { Send, Loader2, Globe, User, Sparkles, MapPin, BookOpen, PanelLeftOpen, History, LogOut, UserCircle, Plus, Mic, MicOff } from 'lucide-react';
 import { AIAgent, createConversation, getPersonas, loadConversation } from '../lib/ai-agent';
 import { getCurrentUser, signOut, getUserProfile } from '../lib/auth';
 import type { Persona, Message } from '../lib/supabase';
@@ -31,8 +31,6 @@ export default function ChatInterface() {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
     return !hasSeenWelcome;
   });
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
-  const [autoSpeak, setAutoSpeak] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const languageMap: Record<Language, string> = {
@@ -191,7 +189,7 @@ export default function ChatInterface() {
       };
       setMessages(prev => [...prev, assistantMessage]);
 
-      if (voiceEnabled && autoSpeak) {
+      if (voiceChat.isSupported) {
         voiceChat.speak(response.content);
       }
     } catch (error) {
@@ -581,74 +579,40 @@ export default function ChatInterface() {
 
       <footer className="relative bg-white/10 backdrop-blur-xl border-t border-white/20 flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
-          {voiceChat.isSupported && (
-            <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/10">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setVoiceEnabled(!voiceEnabled)}
-                  className={`p-2 rounded-lg transition-all ${
-                    voiceEnabled ? 'bg-accent-primary text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'
-                  }`}
-                  title={voiceEnabled ? 'Disable voice mode' : 'Enable voice mode'}
-                >
-                  {voiceEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-                </button>
-                <span className="text-xs text-white/70 font-breton">
-                  {voiceEnabled ? 'Voice mode enabled' : 'Voice mode disabled'}
-                </span>
-              </div>
-              {voiceEnabled && (
-                <button
-                  onClick={() => setAutoSpeak(!autoSpeak)}
-                  className={`p-2 rounded-lg transition-all ${
-                    autoSpeak ? 'bg-accent-primary text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'
-                  }`}
-                  title={autoSpeak ? 'Disable auto-speak' : 'Enable auto-speak'}
-                >
-                  {autoSpeak ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-                </button>
-              )}
-            </div>
-          )}
-          <div className="flex gap-2 sm:gap-3">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={voiceChat.isListening ? 'Listening...' : getTranslation(language, 'inputPlaceholder')}
-                className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-white placeholder-white/60 transition-all disabled:opacity-50 text-sm sm:text-base"
-                disabled={loading || voiceChat.isListening}
-              />
-              <Sparkles className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-accent-primary opacity-50" />
-            </div>
-            {voiceEnabled && voiceChat.isSupported && (
+          <div className="relative">
+            {voiceChat.isSupported && (
               <button
                 onClick={handleVoiceInput}
                 disabled={loading}
-                className={`relative px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center gap-2 hover:scale-105 active:scale-95 font-medium text-sm sm:text-base ${
+                className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg transition-all duration-300 ${
                   voiceChat.isListening
-                    ? 'bg-red-500 text-white hover:shadow-2xl hover:shadow-red-500/50 animate-pulse'
-                    : 'bg-white/10 text-white hover:bg-white/20'
+                    ? 'bg-red-500 text-white animate-pulse'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
                 title={voiceChat.isListening ? 'Stop listening' : 'Start voice input'}
               >
                 {voiceChat.isListening ? <MicOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
             )}
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={voiceChat.isListening ? 'Listening...' : getTranslation(language, 'inputPlaceholder')}
+              className="w-full pl-12 sm:pl-14 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-white placeholder-white/60 transition-all disabled:opacity-50 text-sm sm:text-base"
+              disabled={loading || voiceChat.isListening}
+            />
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim()}
-              className="relative px-4 sm:px-8 py-3 sm:py-4 bg-accent-primary text-white rounded-xl sm:rounded-2xl hover:shadow-2xl hover:shadow-accent-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2 disabled:hover:shadow-none hover:scale-105 active:scale-95 font-medium text-sm sm:text-base"
+              className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-accent-primary text-white hover:bg-accent-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 active:scale-95"
+              title="Send message"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
               ) : (
-                <>
-                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline">{getTranslation(language, 'send')}</span>
-                </>
+                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
               )}
             </button>
           </div>
