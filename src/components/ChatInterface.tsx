@@ -579,42 +579,44 @@ export default function ChatInterface() {
 
       <footer className="relative bg-white/10 backdrop-blur-xl border-t border-white/20 flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
-          <div className="relative">
+          <div className="flex gap-2 sm:gap-3">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={voiceChat.isListening ? 'Listening...' : getTranslation(language, 'inputPlaceholder')}
+                className="w-full pl-4 sm:pl-6 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-white placeholder-white/60 transition-all disabled:opacity-50 text-sm sm:text-base"
+                disabled={loading || voiceChat.isListening}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={loading || !input.trim()}
+                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-accent-primary text-white hover:bg-accent-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 active:scale-95"
+                title="Send message"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                )}
+              </button>
+            </div>
             {voiceChat.isSupported && (
               <button
                 onClick={handleVoiceInput}
                 disabled={loading}
-                className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg transition-all duration-300 ${
+                className={`px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 ${
                   voiceChat.isListening
                     ? 'bg-red-500 text-white animate-pulse'
-                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                    : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
                 title={voiceChat.isListening ? 'Stop listening' : 'Start voice input'}
               >
                 {voiceChat.isListening ? <MicOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
             )}
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={voiceChat.isListening ? 'Listening...' : getTranslation(language, 'inputPlaceholder')}
-              className="w-full pl-12 sm:pl-14 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-white placeholder-white/60 transition-all disabled:opacity-50 text-sm sm:text-base"
-              disabled={loading || voiceChat.isListening}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={loading || !input.trim()}
-              className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-accent-primary text-white hover:bg-accent-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 active:scale-95"
-              title="Send message"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-              )}
-            </button>
           </div>
         </div>
       </footer>
