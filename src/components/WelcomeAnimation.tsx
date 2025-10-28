@@ -1,16 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
-import VillageAnimation from './VillageAnimation';
-import CiaoAnimation from './CiaoAnimation';
-import WelcomeTextAnimation from './WelcomeTextAnimation';
+import { useState, useEffect, useRef } from "react";
+import { X } from "lucide-react";
+import VillageAnimation from "./VillageAnimation";
+import WelcomeTextAnimation from "./WelcomeTextAnimation";
 
 interface WelcomeAnimationProps {
   onComplete: () => void;
   onSkip: () => void;
 }
 
-export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimationProps) {
-  const [phase, setPhase] = useState<'start' | 'village' | 'ciao' | 'welcome'>('start');
+export default function WelcomeAnimation({
+  onComplete,
+  onSkip,
+}: WelcomeAnimationProps) {
+  const [phase, setPhase] = useState<"start" | "village" | "ciao" | "welcome">(
+    "start"
+  );
   const [voiceActive, setVoiceActive] = useState(false);
   const [audioError, setAudioError] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -22,19 +26,19 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
     if (animationStarted.current) return;
     animationStarted.current = true;
 
-    setPhase('village');
+    setPhase("village");
 
-    const audio = new Audio('/audio/welcome.mp3');
-    audio.preload = 'auto';
+    const audio = new Audio("/audio/welcome.mp3");
+    audio.preload = "auto";
     audio.load();
     audioRef.current = audio;
 
     const villageTimer = setTimeout(() => {
-      setPhase('ciao');
+      setPhase("ciao");
     }, 3000);
 
     const ciaoTimer = setTimeout(() => {
-      setPhase('welcome');
+      setPhase("welcome");
       setVoiceActive(true);
       playWelcomeMessage();
     }, 4500);
@@ -73,7 +77,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
     if (isMuted) return;
 
     if (!audioRef.current) {
-      audioRef.current = new Audio('/audio/welcome.mp3');
+      audioRef.current = new Audio("/audio/welcome.mp3");
     }
 
     const audio = audioRef.current;
@@ -84,11 +88,14 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
-          console.log('Audio playback started successfully');
+          console.log("Audio playback started successfully");
           setVoiceActive(true);
         })
         .catch((error) => {
-          console.warn('Audio playback failed, falling back to speech synthesis:', error);
+          console.warn(
+            "Audio playback failed, falling back to speech synthesis:",
+            error
+          );
           setAudioError(true);
           fallbackToSpeechSynthesis();
         });
@@ -98,20 +105,20 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
   };
 
   const fallbackToSpeechSynthesis = () => {
-    console.log('Using speech synthesis fallback');
+    console.log("Using speech synthesis fallback");
     setVoiceActive(true);
 
     const loadVoices = () => {
       const voices = speechSynthesis.getVoices();
-      const italianVoice = voices.find(voice => voice.lang.startsWith('it'));
+      const italianVoice = voices.find((voice) => voice.lang.startsWith("it"));
 
-      console.log('Available voices:', voices.length);
-      console.log('Italian voice found:', !!italianVoice);
+      console.log("Available voices:", voices.length);
+      console.log("Italian voice found:", !!italianVoice);
 
       const utterance = new SpeechSynthesisUtterance(
         "Benvenuto, sono la guida turistica di questo bellissimo borgo. Come posso aiutarti?"
       );
-      utterance.lang = 'it-IT';
+      utterance.lang = "it-IT";
       utterance.rate = 0.9;
       utterance.pitch = 1;
 
@@ -120,15 +127,15 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
       }
 
       utterance.onstart = () => {
-        console.log('Speech synthesis started');
+        console.log("Speech synthesis started");
       };
 
       utterance.onend = () => {
-        console.log('Speech synthesis ended');
+        console.log("Speech synthesis ended");
       };
 
       utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
+        console.error("Speech synthesis error:", event);
       };
 
       utteranceRef.current = utterance;
@@ -138,7 +145,9 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
     if (speechSynthesis.getVoices().length > 0) {
       loadVoices();
     } else {
-      speechSynthesis.addEventListener('voiceschanged', loadVoices, { once: true });
+      speechSynthesis.addEventListener("voiceschanged", loadVoices, {
+        once: true,
+      });
     }
   };
 
@@ -165,7 +174,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
       }
       setVoiceActive(false);
     } else {
-      if (phase === 'welcome') {
+      if (phase === "welcome") {
         playWelcomeMessage();
       }
     }
@@ -173,7 +182,7 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
 
   return (
     <div className="fixed inset-0 bg-bg-primary z-50 flex items-center justify-center overflow-hidden font-breton">
-      {phase === 'start' && (
+      {phase === "start" && (
         <div
           onClick={startAnimation}
           className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-50 bg-bg-primary"
@@ -186,61 +195,88 @@ export default function WelcomeAnimation({ onComplete, onSkip }: WelcomeAnimatio
                 className="w-32 h-32 mx-auto"
               />
             </div>
-            <h2 className="text-4xl font-breton font-semibold text-white mb-4">Tocca per iniziare</h2>
-            <p className="text-white/80 text-lg font-breton">Click anywhere to start the experience</p>
+            <h2 className="text-4xl font-breton font-semibold text-white mb-4">
+              Tocca per iniziare
+            </h2>
+            <p className="text-white/80 text-lg font-breton">
+              Click anywhere to start the experience
+            </p>
           </div>
         </div>
       )}
 
-      {phase !== 'start' && (
+      {phase !== "start" && (
         <div className="absolute top-6 right-6 flex gap-2 z-10">
-        <button
-          onClick={toggleMute}
-          className="p-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full shadow-lg transition-all hover:scale-110 border border-white/20"
-          aria-label={isMuted ? "Unmute" : "Mute"}
-        >
-          {isMuted ? (
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-            </svg>
-          ) : (
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-            </svg>
-          )}
-        </button>
-        <button
-          onClick={handleSkip}
-          className="p-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full shadow-lg transition-all hover:scale-110 border border-white/20"
-          aria-label="Skip animation"
-        >
-          <X className="w-6 h-6 text-white" />
-        </button>
+          <button
+            onClick={toggleMute}
+            className="p-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full shadow-lg transition-all hover:scale-110 border border-white/20"
+            aria-label={isMuted ? "Unmute" : "Mute"}
+          >
+            {isMuted ? (
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                />
+              </svg>
+            )}
+          </button>
+          <button
+            onClick={handleSkip}
+            className="p-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full shadow-lg transition-all hover:scale-110 border border-white/20"
+            aria-label="Skip animation"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
         </div>
       )}
 
       <div className="relative w-full h-full flex items-center justify-center">
-        {phase === 'village' && (
+        {phase === "village" && (
           <div className="animate-fade-in w-full h-full">
             <VillageAnimation />
           </div>
         )}
 
-        {phase === 'ciao' && (
-          <div className="animate-fade-in w-full h-full">
-            <CiaoAnimation />
-          </div>
-        )}
-
-        {phase === 'welcome' && (
+        {phase === "welcome" && (
           <div className="animate-fade-in w-full h-full">
             <WelcomeTextAnimation />
             {audioError && (
-              <p className="text-sm text-accent-primary mt-4 font-breton text-center">Using text-to-speech</p>
+              <p className="text-sm text-accent-primary mt-4 font-breton text-center">
+                Using text-to-speech
+              </p>
             )}
             {isMuted && (
-              <p className="text-sm text-white/70 mt-4 font-breton text-center">Audio is muted</p>
+              <p className="text-sm text-white/70 mt-4 font-breton text-center">
+                Audio is muted
+              </p>
             )}
           </div>
         )}
