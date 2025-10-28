@@ -12,9 +12,7 @@ export default function WelcomeAnimation({
   onComplete,
   onSkip,
 }: WelcomeAnimationProps) {
-  const [phase, setPhase] = useState<"start" | "village" | "ciao" | "welcome">(
-    "start"
-  );
+  const [phase, setPhase] = useState<"start" | "village" | "welcome">("start");
   const [voiceActive, setVoiceActive] = useState(false);
   const [audioError, setAudioError] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -28,28 +26,26 @@ export default function WelcomeAnimation({
 
     setPhase("village");
 
+    // Preload audio for better synchronization
     const audio = new Audio("/audio/welcome.mp3");
     audio.preload = "auto";
     audio.load();
     audioRef.current = audio;
 
     const villageTimer = setTimeout(() => {
-      setPhase("ciao");
-    }, 3000);
-
-    const ciaoTimer = setTimeout(() => {
       setPhase("welcome");
+      // Start audio and text animation simultaneously
       setVoiceActive(true);
       playWelcomeMessage();
-    }, 4500);
+    }, 3000);
 
+    // Extended timer to allow for 6-second audio + text animation
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, 12000);
+    }, 10000); // 3s (village) + 6s (audio) + 1s (buffer)
 
     return () => {
       clearTimeout(villageTimer);
-      clearTimeout(ciaoTimer);
       clearTimeout(completeTimer);
       if (speechSynthesis.speaking) {
         speechSynthesis.cancel();
@@ -78,29 +74,42 @@ export default function WelcomeAnimation({
 
     if (!audioRef.current) {
       audioRef.current = new Audio("/audio/welcome.mp3");
+      audioRef.current.preload = "auto";
     }
 
     const audio = audioRef.current;
     audio.currentTime = 0;
 
-    const playPromise = audio.play();
+    // Ensure audio is ready before playing
+    const playAudio = () => {
+      const playPromise = audio.play();
 
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          console.log("Audio playback started successfully");
-          setVoiceActive(true);
-        })
-        .catch((error) => {
-          console.warn(
-            "Audio playback failed, falling back to speech synthesis:",
-            error
-          );
-          setAudioError(true);
-          fallbackToSpeechSynthesis();
-        });
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("Audio playback started successfully");
+            setVoiceActive(true);
+          })
+          .catch((error) => {
+            console.warn(
+              "Audio playback failed, falling back to speech synthesis:",
+              error
+            );
+            setAudioError(true);
+            fallbackToSpeechSynthesis();
+          });
+      } else {
+        setVoiceActive(true);
+      }
+    };
+
+    if (audio.readyState >= 2) {
+      // Audio is ready to play
+      playAudio();
     } else {
-      setVoiceActive(true);
+      // Wait for audio to be ready
+      audio.addEventListener("canplay", playAudio, { once: true });
+      audio.load();
     }
   };
 
@@ -258,25 +267,29 @@ export default function WelcomeAnimation({
         </div>
       )}
 
-      <div className="relative w-full h-full flex items-center justify-center">
+      <div className="relative w-full h-full flex items-center justify-center bg-bg-primary">
         {phase === "village" && (
-          <div className="animate-fade-in w-full h-full">
+          <div className="animate-fade-in w-full h-full bg-bg-primary">
             <VillageAnimation />
           </div>
         )}
 
         {phase === "welcome" && (
-          <div className="animate-fade-in w-full h-full">
+          <div className="animate-fade-in w-full h-full bg-bg-primary relative">
             <WelcomeTextAnimation />
             {audioError && (
-              <p className="text-sm text-accent-primary mt-4 font-breton text-center">
-                Using text-to-speech
-              </p>
+              <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20">
+                <p className="text-sm text-accent-primary font-breton text-center bg-bg-primary/80 px-4 py-2 rounded-lg">
+                  Using text-to-speech
+                </p>
+              </div>
             )}
             {isMuted && (
-              <p className="text-sm text-white/70 mt-4 font-breton text-center">
-                Audio is muted
-              </p>
+              <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20">
+                <p className="text-sm text-white/70 font-breton text-center bg-bg-primary/80 px-4 py-2 rounded-lg">
+                  Audio is muted
+                </p>
+              </div>
             )}
           </div>
         )}
@@ -291,6 +304,18 @@ export default function WelcomeAnimation({
           to {
             opacity: 1;
             transform: scale(1);
+          }
+        }
+
+        @keyframes fadeInSmooth {
+          0% {
+            opacity: 0;
+          }
+          20% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
           }
         }
 
@@ -318,6 +343,10 @@ export default function WelcomeAnimation({
 
         .animate-fade-in {
           animation: fadeIn 1s ease-out forwards;
+        }
+
+        .animate-fade-in-smooth {
+          animation: fadeInSmooth 0.8s ease-out forwards;
         }
       `}</style>
     </div>
