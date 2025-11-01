@@ -88,19 +88,45 @@ ${this.persona.tone_instructions}`;
 
   async searchKnowledgeBase(query: string): Promise<string[]> {
     try {
-      // Import dynamically to avoid circular dependencies
-      const { searchKnowledge } = await import('./knowledge-base');
+      // Try semantic search first (if embeddings exist)
+      const { data: embeddingData } = await supabase
+        .from('knowledge_base')
+        .select('embedding')
+        .not('embedding', 'is', null)
+        .limit(1);
 
-      // Search using semantic similarity (embeddings)
-      // Content is in Italian, so we search in Italian
-      const results = await searchKnowledge(query, {
-        limit: 5,
-        language: 'it'
-      });
+      // If embeddings exist, use semantic search
+      if (embeddingData && embeddingData.length > 0) {
+        const { searchKnowledge } = await import('./knowledge-base');
+        const results = await searchKnowledge(query, {
+          limit: 5,
+          language: 'it'
+        });
 
-      return results.map(item =>
+        return results.map(item =>
+          `${item.title} (${item.category}${item.location ? `, ${item.location}` : ''}): ${item.content}`
+        );
+      }
+
+      // Fallback: Use basic keyword search (no embeddings needed)
+      const keywords = query.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+      const searchPattern = keywords.join(' | ');
+
+      const { data, error } = await supabase
+        .from('knowledge_base')
+        .select('title, content, category, location')
+        .eq('language', 'it')
+        .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+        .limit(5);
+
+      if (error) {
+        console.error('Knowledge base search error:', error);
+        return [];
+      }
+
+      return data?.map(item =>
         `${item.title} (${item.category}${item.location ? `, ${item.location}` : ''}): ${item.content}`
-      );
+      ) || [];
     } catch (error) {
       console.error('Knowledge base search error:', error);
       return [];
