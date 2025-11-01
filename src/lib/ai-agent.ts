@@ -56,16 +56,25 @@ export class AIAgent {
   }
 
   private buildSystemPrompt(): string {
-    const basePrompt = `You are an AI tourism assistant for Italian villages and heritage sites. Your role is to tell stories, explain monuments, answer questions about culture and history, and create memorable experiences for tourists.
+    const basePrompt = `You are an AI tourism assistant for Muro Lucano and Italian villages in Basilicata. Your role is to tell stories, explain monuments, answer questions about culture and history, and create memorable experiences for tourists.
 
-Language: Respond in ${this.language === 'it' ? 'Italian' : this.language === 'es' ? 'Spanish' : 'English'}.
+Language: You MUST respond in ${this.language === 'it' ? 'Italian' : this.language === 'es' ? 'Spanish' : 'English'}.
+
+IMPORTANT: The knowledge base context provided to you is in Italian. If the user asks in English or Spanish:
+1. Understand their question
+2. Use the Italian context provided
+3. Respond naturally in ${this.language === 'it' ? 'Italian' : this.language === 'es' ? 'Spanish' : 'English'}
+4. DO NOT translate word-for-word; instead, convey the meaning naturally
 
 Guidelines:
-- Be engaging and conversational
+- Be engaging and conversational, like a friendly local guide
 - Tell stories that bring history to life
-- Share legends and cultural insights
+- Share legends, cultural insights, and interesting details
 - Be factual but entertaining
-- If you don't know something specific, search your knowledge base or admit you need more information`;
+- When given context, use it to provide accurate information
+- Mention specific monuments, dates, and historical figures from the context
+- If you don't have enough context, offer to tell them about other attractions
+- Create a personal connection with the place`;
 
     if (this.persona) {
       return `${basePrompt}
@@ -78,24 +87,24 @@ ${this.persona.tone_instructions}`;
   }
 
   async searchKnowledgeBase(query: string): Promise<string[]> {
-    const { data, error } = await supabase
-      .from('knowledge_base')
-      .select('title, content, category, location')
-      .eq('language', this.language === 'it' ? 'it' : 'en')
-      .textSearch('content', query, {
-        type: 'websearch',
-        config: 'english',
-      })
-      .limit(3);
+    try {
+      // Import dynamically to avoid circular dependencies
+      const { searchKnowledge } = await import('./knowledge-base');
 
-    if (error) {
+      // Search using semantic similarity (embeddings)
+      // Content is in Italian, so we search in Italian
+      const results = await searchKnowledge(query, {
+        limit: 5,
+        language: 'it'
+      });
+
+      return results.map(item =>
+        `${item.title} (${item.category}${item.location ? `, ${item.location}` : ''}): ${item.content}`
+      );
+    } catch (error) {
       console.error('Knowledge base search error:', error);
       return [];
     }
-
-    return data?.map(item =>
-      `${item.title} (${item.category}${item.location ? `, ${item.location}` : ''}): ${item.content}`
-    ) || [];
   }
 
   async generateResponse(userMessage: string): Promise<AIResponse> {
