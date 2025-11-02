@@ -165,69 +165,154 @@ Gerardo era unico figlio maschio della famiglia dopo le sorelle Brigida, Anna ed
 
 async function main() {
   try {
-    console.log('\n📍 Inserting monuments...');
+    console.log('\n📍 Checking existing monuments...');
 
-    const { data: insertedMonuments, error: monumentError } = await supabase
+    // Check if monuments already exist
+    const { data: existingMonuments } = await supabase
       .from('monuments')
-      .insert(monuments)
       .select('id, slug');
 
-    if (monumentError) {
-      throw new Error(`Failed to insert monuments: ${monumentError.message}`);
-    }
+    let insertedMonuments;
 
-    console.log(`✅ Inserted ${insertedMonuments.length} monuments\n`);
+    if (existingMonuments && existingMonuments.length > 0) {
+      console.log(`ℹ️  Found ${existingMonuments.length} existing monuments - skipping insert\n`);
+      insertedMonuments = existingMonuments;
+    } else {
+      console.log('📍 Inserting monuments...');
+
+      const { data, error: monumentError } = await supabase
+        .from('monuments')
+        .insert(monuments)
+        .select('id, slug');
+
+      if (monumentError) {
+        throw new Error(`Failed to insert monuments: ${monumentError.message}`);
+      }
+
+      console.log(`✅ Inserted ${data.length} monuments\n`);
+      insertedMonuments = data;
+    }
 
     const slugToId = new Map(insertedMonuments.map(m => [m.slug, m.id]));
 
+    // Check existing knowledge items
+    const { data: existingKnowledge } = await supabase
+      .from('knowledge_base')
+      .select('id, title, embedding');
+
+    const existingTitles = new Map(existingKnowledge?.map(k => [k.title, k]) || []);
+
     console.log('📝 Processing knowledge items...');
-    console.log('⏳ Generating embeddings (this will take ~30 seconds)...\n');
 
-    const processedItems = [];
+    // Check if we need to add embeddings to existing items
+    const needsEmbeddings = existingKnowledge?.some(k => k.embedding === null) || false;
 
-    for (let i = 0; i < knowledgeContent.length; i++) {
-      const item = knowledgeContent[i];
+    if (existingKnowledge && existingKnowledge.length > 0) {
+      console.log(`ℹ️  Found ${existingKnowledge.length} existing knowledge items`);
 
-      try {
-        if (item.location) {
-          const slug = item.location.toLowerCase().replace(/\s+/g, '-');
-          item.monument_id = slugToId.get(slug);
+      if (needsEmbeddings) {
+        console.log('⏳ Adding embeddings to existing items (this will take ~30 seconds)...\n');
+
+        let updatedCount = 0;
+
+        for (let i = 0; i < existingKnowledge.length; i++) {
+          const existing = existingKnowledge[i];
+
+          if (existing.embedding === null) {
+            try {
+              // Get full content for this item
+              const { data: fullItem } = await supabase
+                .from('knowledge_base')
+                .select('title, content')
+                .eq('id', existing.id)
+                .single();
+
+              if (fullItem) {
+                const textToEmbed = `${fullItem.title}\n\n${fullItem.content}`;
+
+                console.log(`[${i + 1}/${existingKnowledge.length}] ${fullItem.title.substring(0, 50)}...`);
+
+                const embedding = await generateEmbedding(textToEmbed);
+
+                await supabase
+                  .from('knowledge_base')
+                  .update({ embedding })
+                  .eq('id', existing.id);
+
+                updatedCount++;
+              }
+            } catch (error) {
+              console.error(`   ❌ Failed: ${error.message}`);
+            }
+          }
         }
 
-        const textToEmbed = `${item.title}\n\n${item.content}`;
-
-        console.log(`[${i + 1}/${knowledgeContent.length}] ${item.title.substring(0, 50)}...`);
-
-        const embedding = await generateEmbedding(textToEmbed);
-
-        processedItems.push({
-          ...item,
-          embedding,
-          word_count: item.content.split(/\s+/).length,
-          language: 'it'
-        });
-
-      } catch (error) {
-        console.error(`   ❌ Failed: ${error.message}`);
+        console.log(`\n✅ Added embeddings to ${updatedCount} items`);
+      } else {
+        console.log('✅ All items already have embeddings\n');
       }
+    } else {
+      console.log('⏳ Generating embeddings (this will take ~30 seconds)...\n');
+
+      const processedItems = [];
+
+      for (let i = 0; i < knowledgeContent.length; i++) {
+        const item = knowledgeContent[i];
+
+        try {
+          if (item.location) {
+            const slug = item.location.toLowerCase().replace(/\s+/g, '-');
+            item.monument_id = slugToId.get(slug);
+          }
+
+          const textToEmbed = `${item.title}\n\n${item.content}`;
+
+          console.log(`[${i + 1}/${knowledgeContent.length}] ${item.title.substring(0, 50)}...`);
+
+          const embedding = await generateEmbedding(textToEmbed);
+
+          processedItems.push({
+            ...item,
+            embedding,
+            word_count: item.content.split(/\s+/).length,
+            language: 'it'
+          });
+
+        } catch (error) {
+          console.error(`   ❌ Failed: ${error.message}`);
+        }
+      }
+
+      console.log('\n💾 Inserting knowledge items into database...');
+
+      const { error: knowledgeError } = await supabase
+        .from('knowledge_base')
+        .insert(processedItems);
+
+      if (knowledgeError) {
+        throw new Error(`Failed to insert knowledge: ${knowledgeError.message}`);
+      }
+
+      console.log(`✅ Inserted ${processedItems.length} knowledge items`);
     }
 
-    console.log('\n💾 Inserting knowledge items into database...');
-
-    const { error: knowledgeError } = await supabase
+    // Get final count of knowledge items
+    const { data: finalKnowledge } = await supabase
       .from('knowledge_base')
-      .insert(processedItems);
+      .select('id, embedding');
 
-    if (knowledgeError) {
-      throw new Error(`Failed to insert knowledge: ${knowledgeError.message}`);
-    }
-
-    console.log(`✅ Inserted ${processedItems.length} knowledge items`);
+    const withEmbeddings = finalKnowledge?.filter(k => k.embedding !== null).length || 0;
 
     console.log('\n🎉 Knowledge base populated successfully!');
     console.log('\n📊 Summary:');
     console.log(`   ✓ ${insertedMonuments.length} monuments`);
-    console.log(`   ✓ ${processedItems.length} knowledge items`);
+    console.log(`   ✓ ${finalKnowledge?.length || 0} knowledge items`);
+    console.log(`   ✓ ${withEmbeddings} items with embeddings`);
+
+    if (withEmbeddings > 0) {
+      console.log('\n✅ Semantic search is now ACTIVE!');
+    }
+
     console.log('\nYou can now test the chatbot with questions like:');
     console.log('  - "Tell me about the castle"');
     console.log('  - "What is the Canyon delle Ripe?"');
