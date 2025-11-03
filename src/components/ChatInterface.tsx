@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Loader2, Globe, User, Sparkles, MapPin, BookOpen, PanelLeftOpen, History, LogOut, UserCircle, Plus, Mic, MicOff } from 'lucide-react';
+import { Send, Loader2, Globe, User, Sparkles, MapPin, BookOpen, PanelLeftOpen, History, LogOut, UserCircle, Plus, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { AIAgent, createConversation, getPersonas, loadConversation } from '../lib/ai-agent';
 import { getCurrentUser, signOut, getUserProfile } from '../lib/auth';
 import type { Persona, Message } from '../lib/supabase';
@@ -31,6 +31,7 @@ export default function ChatInterface() {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
     return !hasSeenWelcome;
   });
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const languageMap: Record<Language, string> = {
@@ -109,6 +110,11 @@ export default function ChatInterface() {
   };
 
   const startNewConversation = async () => {
+    if (!user && messages.length > 0) {
+      setShowSavePrompt(true);
+      return;
+    }
+
     try {
       const convId = await createConversation(language, selectedPersona || undefined, user?.id);
       setConversationId(convId);
@@ -119,9 +125,23 @@ export default function ChatInterface() {
       setAgent(newAgent);
       setMessages([]);
       setShowMobileMenu(false);
+      setShowSavePrompt(false);
     } catch (error) {
       console.error('Failed to create conversation:', error);
     }
+  };
+
+  const handleEndConversationWithoutSave = async () => {
+    setShowSavePrompt(false);
+    const convId = await createConversation(language, selectedPersona || undefined, user?.id);
+    setConversationId(convId);
+    const newAgent = new AIAgent(convId, language);
+    if (selectedPersona) {
+      await newAgent.setPersona(selectedPersona);
+    }
+    setAgent(newAgent);
+    setMessages([]);
+    setShowMobileMenu(false);
   };
 
   const handleSelectConversation = async (convId: string) => {
@@ -604,18 +624,29 @@ export default function ChatInterface() {
               </button>
             </div>
             {voiceChat.isSupported && (
-              <button
-                onClick={handleVoiceInput}
-                disabled={loading}
-                className={`px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 ${
-                  voiceChat.isListening
-                    ? 'bg-red-500 text-white animate-pulse'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-                title={voiceChat.isListening ? 'Stop listening' : 'Start voice input'}
-              >
-                {voiceChat.isListening ? <MicOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
-              </button>
+              <>
+                <button
+                  onClick={handleVoiceInput}
+                  disabled={loading}
+                  className={`px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 ${
+                    voiceChat.isListening
+                      ? 'bg-red-500 text-white animate-pulse'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                  title={voiceChat.isListening ? 'Stop listening' : 'Start voice input'}
+                >
+                  {voiceChat.isListening ? <MicOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
+                </button>
+                {voiceChat.isSpeaking && (
+                  <button
+                    onClick={voiceChat.stopSpeaking}
+                    className="px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 bg-orange-500 text-white animate-pulse"
+                    title="Stop speaking"
+                  >
+                    <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -638,6 +669,45 @@ export default function ChatInterface() {
           currentConversationId={conversationId}
           userId={user.id}
         />
+      )}
+
+      {showSavePrompt && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gradient-to-br from-blue-900 to-purple-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-white/20 animate-fade-in">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <History className="w-8 h-8 text-yellow-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {getTranslation(language, 'saveConversationTitle')}
+              </h2>
+              <p className="text-white/70 text-sm">
+                {getTranslation(language, 'saveConversationMessage')}
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:scale-105 transition-transform duration-200 shadow-lg"
+              >
+                {getTranslation(language, 'createAccount')}
+              </button>
+              <button
+                onClick={handleEndConversationWithoutSave}
+                className="w-full px-6 py-3 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-colors duration-200"
+              >
+                {getTranslation(language, 'continueWithoutSaving')}
+              </button>
+              <button
+                onClick={() => setShowSavePrompt(false)}
+                className="w-full px-6 py-3 text-white/70 hover:text-white transition-colors duration-200 text-sm"
+              >
+                {getTranslation(language, 'cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

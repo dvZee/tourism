@@ -24,6 +24,11 @@ export const translations = {
     errorSendingMessage: 'Failed to send message',
     selectPersona: 'Select a tourism guide',
     thinking: 'Thinking...',
+    saveConversationTitle: 'Save Your Conversation?',
+    saveConversationMessage: 'Create an account to save your chat history and continue your conversations later.',
+    createAccount: 'Create Account',
+    continueWithoutSaving: 'Continue Without Saving',
+    cancel: 'Cancel',
   },
   it: {
     appTitle: 'Assistente Turistico AI',
@@ -50,6 +55,11 @@ export const translations = {
     errorSendingMessage: 'Impossibile inviare il messaggio',
     selectPersona: 'Seleziona una guida turistica',
     thinking: 'Sto pensando...',
+    saveConversationTitle: 'Salvare la Conversazione?',
+    saveConversationMessage: 'Crea un account per salvare la cronologia delle chat e continuare le conversazioni in seguito.',
+    createAccount: 'Crea Account',
+    continueWithoutSaving: 'Continua Senza Salvare',
+    cancel: 'Annulla',
   },
   es: {
     appTitle: 'Asistente Turístico AI',
@@ -76,6 +86,11 @@ export const translations = {
     errorSendingMessage: 'Error al enviar el mensaje',
     selectPersona: 'Selecciona una guía turística',
     thinking: 'Pensando...',
+    saveConversationTitle: '¿Guardar tu Conversación?',
+    saveConversationMessage: 'Crea una cuenta para guardar tu historial de chat y continuar tus conversaciones más tarde.',
+    createAccount: 'Crear Cuenta',
+    continueWithoutSaving: 'Continuar Sin Guardar',
+    cancel: 'Cancelar',
   },
 };
 
