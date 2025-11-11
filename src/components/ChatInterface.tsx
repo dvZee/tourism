@@ -271,7 +271,7 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-bg-primary font-breton relative overflow-hidden" style={{ height: '100dvh' }}>
+    <div className="flex flex-col h-full bg-bg-primary font-breton relative overflow-hidden">
 
       <header className="relative bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-2xl font-breton">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
