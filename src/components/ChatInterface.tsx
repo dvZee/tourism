@@ -204,7 +204,7 @@ export default function ChatInterface() {
       };
       setMessages(prev => [...prev, assistantMessage]);
 
-      if (voiceChat.isSupported) {
+      if (voiceChat.isSupported && voiceChat.isVoiceMode) {
         voiceChat.speak(response.content);
       }
     } catch (error) {
@@ -511,7 +511,67 @@ export default function ChatInterface() {
       </header>
 
       <main className="flex-1 overflow-y-auto relative" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {voiceChat.isVoiceMode ? (
+          <div className="h-full flex items-center justify-center px-4">
+            <div className="text-center max-w-2xl mx-auto">
+              <div className="relative mb-8">
+                <div className={`absolute inset-0 rounded-full blur-3xl opacity-40 animate-pulse ${
+                  voiceChat.isListening ? 'bg-red-500' : voiceChat.isSpeaking ? 'bg-blue-500' : 'bg-accent-primary'
+                }`}></div>
+                <div className={`relative w-48 h-48 mx-auto rounded-full flex items-center justify-center transition-all duration-500 ${
+                  voiceChat.isListening
+                    ? 'bg-gradient-to-br from-red-500 to-red-600 shadow-2xl shadow-red-500/50 scale-110'
+                    : voiceChat.isSpeaking
+                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-2xl shadow-blue-500/50 scale-110'
+                    : 'bg-gradient-to-br from-accent-primary to-purple-600 shadow-2xl shadow-accent-primary/50'
+                }`}>
+                  {voiceChat.isListening ? (
+                    <Mic className="w-24 h-24 text-white animate-pulse" />
+                  ) : voiceChat.isSpeaking ? (
+                    <Volume2 className="w-24 h-24 text-white animate-pulse" />
+                  ) : (
+                    <Volume2 className="w-24 h-24 text-white" />
+                  )}
+                </div>
+                {voiceChat.isListening && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-48 h-48 rounded-full border-4 border-red-500/30 animate-ping"></div>
+                  </div>
+                )}
+                {voiceChat.isSpeaking && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-48 h-48 rounded-full border-4 border-blue-500/30 animate-ping"></div>
+                  </div>
+                )}
+              </div>
+
+              <h2 className="text-4xl font-bold text-white mb-4">
+                {voiceChat.isListening ? getTranslation(language, 'listening') || 'Listening...' :
+                 voiceChat.isSpeaking ? getTranslation(language, 'speaking') || 'Speaking...' :
+                 getTranslation(language, 'voiceModeReady') || 'Ready to listen'}
+              </h2>
+
+              {voiceChat.transcript && (
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20">
+                  <p className="text-white/80 text-lg">{voiceChat.transcript}</p>
+                </div>
+              )}
+
+              {messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+                <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20">
+                  <p className="text-gray-900 text-lg leading-relaxed">{messages[messages.length - 1].content}</p>
+                </div>
+              )}
+
+              <p className="text-white/60 text-sm">
+                {voiceChat.isListening ? getTranslation(language, 'speakNow') || 'Speak your question now' :
+                 voiceChat.isSpeaking ? getTranslation(language, 'aiResponding') || 'AI is responding' :
+                 getTranslation(language, 'waitingForYou') || 'Waiting for your question'}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {messages.length === 0 ? (
             <div className="text-center py-12 sm:py-16 animate-fade-in">
               <div className="relative inline-block mb-6">
@@ -611,64 +671,59 @@ export default function ChatInterface() {
               <div ref={messagesEndRef} />
             </div>
           )}
-        </div>
+          </div>
+        )}
       </main>
 
       <footer className="relative bg-white/10 backdrop-blur-xl border-t border-white/20 flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
-          <div className="flex gap-2 sm:gap-3">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={voiceChat.isListening ? 'Listening...' : getTranslation(language, 'inputPlaceholder')}
-                className="w-full pl-4 sm:pl-6 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-white placeholder-white/60 transition-all disabled:opacity-50 text-sm sm:text-base"
-                disabled={loading || voiceChat.isListening}
-              />
+          {voiceChat.isVoiceMode ? (
+            <div className="flex items-center justify-center gap-4">
               <button
-                onClick={sendMessage}
-                disabled={loading || !input.trim()}
-                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-accent-primary text-white hover:bg-accent-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 active:scale-95"
-                title="Send message"
+                onClick={voiceChat.toggleVoiceMode}
+                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white shadow-2xl shadow-red-500/50 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 text-lg font-semibold"
               >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-                )}
+                <VolumeX className="w-6 h-6" />
+                {getTranslation(language, 'exitVoiceMode') || 'Exit Voice Mode'}
               </button>
             </div>
-            {voiceChat.isSupported && (
-              <>
+          ) : (
+            <div className="flex gap-2 sm:gap-3">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder={getTranslation(language, 'inputPlaceholder')}
+                  className="w-full pl-4 sm:pl-6 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-white placeholder-white/60 transition-all disabled:opacity-50 text-sm sm:text-base"
+                  disabled={loading}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={loading || !input.trim()}
+                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-accent-primary text-white hover:bg-accent-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 active:scale-95"
+                  title="Send message"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                  )}
+                </button>
+              </div>
+              {voiceChat.isSupported && (
                 <button
                   onClick={voiceChat.toggleVoiceMode}
                   disabled={loading}
-                  className={`px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 relative ${
-                    voiceChat.isVoiceMode
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/50'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                  title={voiceChat.isVoiceMode ? 'Disable voice chat mode' : 'Enable voice chat mode'}
+                  className="px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl"
+                  title="Enable voice chat mode"
                 >
-                  {voiceChat.isVoiceMode ? (
-                    <>
-                      <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                      {voiceChat.isListening && (
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
-                      )}
-                      {voiceChat.isSpeaking && (
-                        <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
-                      )}
-                    </>
-                  ) : (
-                    <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
-                  )}
+                  <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
-              </>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </footer>
 
