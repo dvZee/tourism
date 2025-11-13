@@ -30,9 +30,10 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
       setIsSupported(true);
 
       const recognition = new SpeechRecognition();
-      recognition.continuous = false;
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = language;
+      recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         setIsListening(true);

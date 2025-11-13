@@ -272,7 +272,11 @@ npm run build
 #### Language Selection
 - Click language buttons in header
 - English | Italian | Spanish
-- Conversation context preserved
+- **Conversation context preserved** (NEW in Milestone 3!)
+- No need to start a new conversation when switching languages
+- All previous messages remain visible
+- AI responds in newly selected language
+- Voice chat automatically uses new language
 
 ### Using the Chat
 
@@ -324,41 +328,162 @@ npm run build
 
 ### Persona Selection
 
+The persona system adapts the AI's communication style to match different visitor types, providing personalized experiences for each tourist.
+
 #### Available Personas
-- **Default**: Balanced, informative responses
-- **Tour Guide**: Detailed historical/cultural info
-- **Local**: Insider tips, hidden gems
-- **Historian**: Deep historical context
+
+**1. Child (Ages 5-12)**
+- **Description**: For young visitors exploring Muro Lucano
+- **Communication Style**:
+  - Simple, clear language
+  - Short, exciting sentences
+  - Fun facts and adventure stories
+  - History told like fairy tales
+  - Avoids complex historical details
+- **Example**: "Wow! The castle is like a giant fortress from a storybook! Knights used to live here and protect the village from bad guys!"
+
+**2. Adult (General Tourists)**
+- **Description**: For adult travelers seeking comprehensive information
+- **Communication Style**:
+  - Clear, informative language
+  - Historical context with dates and facts
+  - Balance between storytelling and accuracy
+  - Cultural significance explained
+  - Practical travel information
+- **Example**: "The Norman Castle dates back to the 11th century and played a crucial role in the region's defensive system. It offers panoramic views of the Basento Valley."
+
+**3. Couple (Romantic Travelers)**
+- **Description**: For romantic getaways and honeymoons
+- **Communication Style**:
+  - Focus on romantic elements and legends
+  - Scenic beauty and atmosphere
+  - Intimate dining spots
+  - Sunset viewpoints
+  - Love stories and folklore
+  - Warm, engaging emotional tone
+- **Example**: "As the sun sets behind the castle walls, the golden light bathes the ancient stones in warmth. Legend says couples who watch the sunset here together will return someday..."
+
+**4. Family (Mixed Ages)**
+- **Description**: For families with children and adults
+- **Communication Style**:
+  - Balanced content for all ages
+  - Fun facts for children
+  - Deeper context for parents
+  - Family-friendly activities suggested
+  - Interactive elements highlighted
+  - Safe, engaging exploration tips
+- **Example**: "The castle has towers that kids love to explore (perfect for young adventurers!), while parents can appreciate the remarkable 11th-century architecture and learn about the Norman conquest."
+
+#### How Personas Work Technically
+
+**System Prompts**: Each persona has custom instructions that guide the AI:
+- Tone and style guidelines
+- Vocabulary complexity level
+- What to emphasize (adventure vs. history vs. romance)
+- How to structure responses
+- What details to include or avoid
+
+**Context Preservation**:
+- Persona applies to entire conversation
+- Can be changed mid-conversation
+- AI adapts responses instantly
+- Previous messages retain their original persona style
+
+**Database Storage**:
+- Persona linked to each conversation
+- User preferences saved (for authenticated users)
+- Analytics track which personas are most popular
 
 #### Changing Persona
-1. Select from persona buttons (desktop)
-2. Or dropdown menu (mobile)
-3. Persona applies to current conversation
-4. Save as preference in profile
+
+**During Conversation**:
+1. **Desktop**: Click persona buttons below language selector
+2. **Mobile**: Use persona dropdown menu
+3. **Effect**: Immediate - next response uses new persona
+4. **Context**: Previous conversation history maintained
+
+**Setting Default Persona** (Authenticated Users):
+1. Login to your account
+2. Go to Profile Settings
+3. Select preferred persona
+4. Saves automatically
+5. All new conversations start with this persona
+
+#### Best Practices for Persona Use
+
+✅ **Recommended**:
+- **Traveling with kids?** → Use "Family" or "Child" persona
+- **Solo adult traveler?** → Use "Adult" persona
+- **Romantic trip?** → Use "Couple" persona
+- **School trip?** → Use "Child" persona for students
+- **Photography tour?** → Use "Adult" or "Couple" for scenic spots
+
+❌ **Not Recommended**:
+- Switching personas constantly (causes inconsistent tone)
+- Using "Child" for complex historical research
+- Using "Couple" when traveling with family (unless just the couple)
+
+#### Persona Examples in Action
+
+**Question**: "Tell me about the Norman Castle"
+
+**Child Response**:
+"The Norman Castle is SO COOL! 🏰 It's a real medieval fortress that's almost 1000 years old! Can you imagine knights and soldiers guarding these huge walls? You can climb up the towers and pretend you're a brave knight protecting the village. The views from the top are amazing - you can see forever! It's like being on top of the world!"
+
+**Adult Response**:
+"The Norman Castle (Castello Normanno) is an 11th-century fortress that dominates Muro Lucano's historic center. Built during the Norman conquest of Southern Italy, it served as a strategic military outpost controlling the Basento Valley. The castle features typical Norman architectural elements including cylindrical towers, thick defensive walls, and elevated positioning for maximum visibility. Today, it's a key historical landmark offering panoramic views of the surrounding Basilicata countryside."
+
+**Couple Response**:
+"The Norman Castle crowns Muro Lucano like a jewel on a hillside, its ancient stones glowing warmly in the setting sun. Walking hand-in-hand through its romantic courtyards, you'll discover intimate corners perfect for quiet moments together. Local legend tells of a princess who waited in the tower for her beloved to return from battle - their love story is woven into the very stones. The sunset views from the castle ramparts are breathtaking, making it one of the most romantic spots in all of Basilicata."
+
+**Family Response**:
+"The Norman Castle is perfect for the whole family! Kids will love exploring the tall towers and thick walls - it's like stepping into a real-life medieval adventure (and great for imagination!). Parents will appreciate the impressive 11th-century architecture and the historical importance of this Norman fortress. There's plenty of space for children to safely explore while adults enjoy the stunning valley views. Pro tip: Bring a picnic and enjoy it in the castle grounds - the kids can run around while you relax!"
 
 ---
 
 ## Voice Chat Feature
 
 ### Overview
-The Voice Chat feature enables completely hands-free, natural conversation with the AI assistant. It's perfect for tourists on-the-go who want information without typing.
+The Voice Chat feature enables completely hands-free, natural conversation with the AI assistant. It's perfect for tourists on-the-go who want information without typing. The system provides a smooth, continuous conversation experience with automatic cycling between listening and responding.
 
 ### How It Works
 
 #### Enabling Voice Mode
 1. Click the **microphone button** in the chat input area
-2. Button turns **green** when voice mode is active
-3. **Red indicator** shows when listening
-4. **Blue indicator** shows when speaking
+2. Button turns **green with gradient** when voice mode is active
+3. **Red indicator** (top-right of button) shows when listening
+4. **Blue indicator** (bottom-right of button) shows when speaking
 
-#### Voice Conversation Flow
-1. **Click microphone** → Activates voice mode
-2. **System listens** → Red dot animates
-3. **You speak** → Ask your question
-4. **System processes** → Brief pause
-5. **AI responds** → Blue dot animates while speaking
-6. **Auto-repeat** → Automatically starts listening again
-7. **Continuous cycle** until you disable voice mode
+#### Voice Conversation Flow (Completely Automatic)
+1. **Click microphone** → Activates continuous voice mode
+2. **System listens** → Red dot pulses, speak your question
+3. **Speech detected** → System captures and processes your words
+4. **AI thinks** → Brief processing (1-2 seconds)
+5. **AI responds** → Blue dot pulses, voice speaks the answer
+6. **Auto-listen** → After 1 second, automatically starts listening again
+7. **Continuous cycle** → Keeps repeating until you turn off voice mode
+8. **Click microphone again** → Deactivates voice mode (button turns gray)
+
+### Key Features
+
+#### Smooth & Seamless
+- **Continuous listening**: Set it and forget it
+- **No manual intervention**: Completely hands-free after activation
+- **Smart timing**: 1-second pause after AI speaks before listening again
+- **Instant feedback**: Visual indicators show system state clearly
+
+#### Language-Aware
+- Voice recognition uses your selected language automatically
+- Text-to-speech speaks in the same language
+- Switch languages in the UI (conversation context preserved)
+- Accent and dialect support varies by browser
+
+#### Visual Feedback
+- **Gray microphone**: Voice mode OFF
+- **Green gradient microphone**: Voice mode ON
+- **Red pulsing dot** (top-right): Currently listening to you
+- **Blue pulsing dot** (bottom-right): Currently speaking to you
+- **Both indicators**: Shows multi-modal state (transitioning)
 
 ### Supported Languages
 Voice recognition and synthesis work in:

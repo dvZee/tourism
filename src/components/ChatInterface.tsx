@@ -164,14 +164,9 @@ export default function ChatInterface() {
 
   const handleLanguageChange = async (lang: 'en' | 'it' | 'es') => {
     setLanguage(lang);
-    const convId = await createConversation(lang, selectedPersona || undefined, user?.id);
-    setConversationId(convId);
-    const newAgent = new AIAgent(convId, lang);
-    if (selectedPersona) {
-      await newAgent.setPersona(selectedPersona);
+    if (agent) {
+      agent.language = lang;
     }
-    setAgent(newAgent);
-    setMessages([]);
     setShowMobileMenu(false);
   };
 
@@ -236,19 +231,24 @@ export default function ChatInterface() {
   useEffect(() => {
     if (voiceChat.isVoiceMode && voiceChat.transcript && !voiceChat.isListening && !loading) {
       const currentInput = voiceChat.transcript.trim();
-      if (currentInput) {
+      if (currentInput && currentInput !== input) {
         sendMessage();
       }
     }
   }, [voiceChat.isListening, voiceChat.isVoiceMode]);
 
   useEffect(() => {
-    if (voiceChat.isVoiceMode && !voiceChat.isSpeaking && !voiceChat.isListening && !loading) {
-      setTimeout(() => {
-        voiceChat.startListening();
-      }, 500);
+    if (voiceChat.isVoiceMode && !voiceChat.isSpeaking && !voiceChat.isListening && !loading && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'assistant') {
+        setTimeout(() => {
+          if (voiceChat.isVoiceMode && !voiceChat.isListening && !voiceChat.isSpeaking) {
+            voiceChat.startListening();
+          }
+        }, 1000);
+      }
     }
-  }, [voiceChat.isSpeaking, voiceChat.isVoiceMode, loading]);
+  }, [messages, voiceChat.isSpeaking, voiceChat.isVoiceMode, loading]);
 
   const handleVoiceInput = () => {
     if (voiceChat.isListening) {
