@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Send, Loader2, Globe, User, Sparkles, MapPin, BookOpen, PanelLeftOpen, History, LogOut, UserCircle, Plus, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { AIAgent, createConversation, getPersonas, loadConversation } from '../lib/ai-agent';
 import { getCurrentUser, signOut, getUserProfile } from '../lib/auth';
@@ -7,10 +7,11 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { UserProfile } from '../lib/auth';
 import AuthModal from './AuthModal';
 import ChatHistory from './ChatHistory';
-import WelcomeAnimation from './WelcomeAnimation';
 import { supabase } from '../lib/supabase';
 import { getTranslation, type Language } from '../lib/translations';
 import { useVoiceChat } from '../hooks/useVoiceChat';
+
+const WelcomeAnimation = lazy(() => import('./WelcomeAnimation'));
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -278,16 +279,18 @@ export default function ChatInterface() {
 
   if (showWelcome) {
     return (
-      <WelcomeAnimation
-        onComplete={() => {
-          localStorage.setItem('hasSeenWelcome', 'true');
-          setShowWelcome(false);
-        }}
-        onSkip={() => {
-          localStorage.setItem('hasSeenWelcome', 'true');
-          setShowWelcome(false);
-        }}
-      />
+      <Suspense fallback={<div className="flex items-center justify-center h-full bg-bg-primary"><Loader2 className="w-12 h-12 text-accent-primary animate-spin" /></div>}>
+        <WelcomeAnimation
+          onComplete={() => {
+            localStorage.setItem('hasSeenWelcome', 'true');
+            setShowWelcome(false);
+          }}
+          onSkip={() => {
+            localStorage.setItem('hasSeenWelcome', 'true');
+            setShowWelcome(false);
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -694,18 +697,6 @@ export default function ChatInterface() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
           {voiceChat.isVoiceMode ? (
             <div className="flex items-center justify-center gap-4">
-              {voiceChat.isListening && (
-                <button
-                  onClick={() => {
-                    voiceChat.stopListening();
-                  }}
-                  disabled={loading}
-                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-green-500 to-green-600 text-white shadow-2xl shadow-green-500/50 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 text-lg font-semibold disabled:opacity-50"
-                >
-                  <Send className="w-6 h-6" />
-                  Send Question
-                </button>
-              )}
               <button
                 onClick={voiceChat.toggleVoiceMode}
                 className="px-8 py-4 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white shadow-2xl shadow-red-500/50 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 text-lg font-semibold"

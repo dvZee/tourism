@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import ChatInterface from './components/ChatInterface';
-import AdminDashboard from './components/AdminDashboard';
 import { isAdmin } from './lib/admin';
 import { supabase } from './lib/supabase';
+
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 
 function App() {
   const [view, setView] = useState<'chat' | 'admin'>('chat');
@@ -62,7 +63,13 @@ function App() {
       )}
 
       <div className="flex-1 overflow-hidden">
-        {view === 'chat' ? <ChatInterface /> : <AdminDashboard />}
+        {view === 'chat' ? (
+          <ChatInterface />
+        ) : (
+          <Suspense fallback={<div className="flex items-center justify-center h-full"><div className="text-white">Loading...</div></div>}>
+            <AdminDashboard />
+          </Suspense>
+        )}
       </div>
     </div>
   );
