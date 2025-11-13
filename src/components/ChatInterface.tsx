@@ -520,16 +520,20 @@ export default function ChatInterface() {
             <div className="text-center max-w-2xl mx-auto">
               <div className="relative mb-8">
                 <div className={`absolute inset-0 rounded-full blur-3xl opacity-40 animate-pulse ${
-                  voiceChat.isListening ? 'bg-red-500' : voiceChat.isSpeaking ? 'bg-blue-500' : 'bg-accent-primary'
+                  loading ? 'bg-yellow-500' : voiceChat.isListening ? 'bg-red-500' : voiceChat.isSpeaking ? 'bg-blue-500' : 'bg-accent-primary'
                 }`}></div>
                 <div className={`relative w-48 h-48 mx-auto rounded-full flex items-center justify-center transition-all duration-500 ${
-                  voiceChat.isListening
+                  loading
+                    ? 'bg-gradient-to-br from-yellow-500 to-orange-600 shadow-2xl shadow-yellow-500/50 scale-110'
+                    : voiceChat.isListening
                     ? 'bg-gradient-to-br from-red-500 to-red-600 shadow-2xl shadow-red-500/50 scale-110'
                     : voiceChat.isSpeaking
                     ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-2xl shadow-blue-500/50 scale-110'
                     : 'bg-gradient-to-br from-accent-primary to-purple-600 shadow-2xl shadow-accent-primary/50'
                 }`}>
-                  {voiceChat.isListening ? (
+                  {loading ? (
+                    <Loader2 className="w-24 h-24 text-white animate-spin" />
+                  ) : voiceChat.isListening ? (
                     <Mic className="w-24 h-24 text-white animate-pulse" />
                   ) : voiceChat.isSpeaking ? (
                     <Volume2 className="w-24 h-24 text-white animate-pulse" />
@@ -537,12 +541,17 @@ export default function ChatInterface() {
                     <Volume2 className="w-24 h-24 text-white" />
                   )}
                 </div>
-                {voiceChat.isListening && (
+                {loading && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-48 h-48 rounded-full border-4 border-yellow-500/30 animate-ping"></div>
+                  </div>
+                )}
+                {voiceChat.isListening && !loading && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-48 h-48 rounded-full border-4 border-red-500/30 animate-ping"></div>
                   </div>
                 )}
-                {voiceChat.isSpeaking && (
+                {voiceChat.isSpeaking && !loading && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-48 h-48 rounded-full border-4 border-blue-500/30 animate-ping"></div>
                   </div>
@@ -550,7 +559,8 @@ export default function ChatInterface() {
               </div>
 
               <h2 className="text-4xl font-bold text-white mb-4">
-                {voiceChat.isListening ? getTranslation(language, 'listening') || 'Listening...' :
+                {loading ? getTranslation(language, 'thinking') || 'Thinking...' :
+                 voiceChat.isListening ? getTranslation(language, 'listening') || 'Listening...' :
                  voiceChat.isSpeaking ? getTranslation(language, 'speaking') || 'Speaking...' :
                  getTranslation(language, 'voiceModeReady') || 'Ready to listen'}
               </h2>
@@ -568,7 +578,8 @@ export default function ChatInterface() {
               )}
 
               <p className="text-white/60 text-sm">
-                {voiceChat.isListening ? getTranslation(language, 'speakNow') || 'Speak your question now' :
+                {loading ? 'Processing your question and searching knowledge base...' :
+                 voiceChat.isListening ? getTranslation(language, 'speakNow') || 'Speak your question now' :
                  voiceChat.isSpeaking ? getTranslation(language, 'aiResponding') || 'AI is responding' :
                  getTranslation(language, 'waitingForYou') || 'Waiting for your question'}
               </p>
@@ -683,6 +694,18 @@ export default function ChatInterface() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
           {voiceChat.isVoiceMode ? (
             <div className="flex items-center justify-center gap-4">
+              {voiceChat.isListening && (
+                <button
+                  onClick={() => {
+                    voiceChat.stopListening();
+                  }}
+                  disabled={loading}
+                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-green-500 to-green-600 text-white shadow-2xl shadow-green-500/50 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 text-lg font-semibold disabled:opacity-50"
+                >
+                  <Send className="w-6 h-6" />
+                  Send Question
+                </button>
+              )}
               <button
                 onClick={voiceChat.toggleVoiceMode}
                 className="px-8 py-4 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white shadow-2xl shadow-red-500/50 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 text-lg font-semibold"

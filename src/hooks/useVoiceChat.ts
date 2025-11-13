@@ -57,17 +57,6 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
 
         const currentTranscript = finalTranscript || interimTranscript;
         setTranscript(currentTranscript);
-
-        if (finalTranscript) {
-          if (silenceTimerRef.current) {
-            clearTimeout(silenceTimerRef.current);
-          }
-          silenceTimerRef.current = setTimeout(() => {
-            if (recognitionRef.current) {
-              recognitionRef.current.stop();
-            }
-          }, 1500);
-        }
       };
 
       recognition.onend = () => {
