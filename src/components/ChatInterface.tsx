@@ -231,8 +231,12 @@ export default function ChatInterface() {
   useEffect(() => {
     if (voiceChat.isVoiceMode && voiceChat.transcript && !voiceChat.isListening && !loading) {
       const currentInput = voiceChat.transcript.trim();
-      if (currentInput && currentInput !== input) {
-        sendMessage();
+      if (currentInput) {
+        const processMessage = async () => {
+          await sendMessage();
+          voiceChat.clearTranscript();
+        };
+        processMessage();
       }
     }
   }, [voiceChat.isListening, voiceChat.isVoiceMode]);

@@ -11,6 +11,7 @@ interface UseVoiceChatReturn {
   isSupported: boolean;
   isVoiceMode: boolean;
   toggleVoiceMode: () => void;
+  clearTranscript: () => void;
 }
 
 export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
@@ -22,6 +23,7 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
 
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const silenceTimerRef = useRef<any>(null);
 
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -30,7 +32,7 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
       setIsSupported(true);
 
       const recognition = new SpeechRecognition();
-      recognition.continuous = true;
+      recognition.continuous = false;
       recognition.interimResults = true;
       recognition.lang = language;
       recognition.maxAlternatives = 1;
@@ -53,7 +55,19 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
           }
         }
 
-        setTranscript(finalTranscript || interimTranscript);
+        const currentTranscript = finalTranscript || interimTranscript;
+        setTranscript(currentTranscript);
+
+        if (finalTranscript) {
+          if (silenceTimerRef.current) {
+            clearTimeout(silenceTimerRef.current);
+          }
+          silenceTimerRef.current = setTimeout(() => {
+            if (recognitionRef.current) {
+              recognitionRef.current.stop();
+            }
+          }, 1500);
+        }
       };
 
       recognition.onend = () => {
@@ -143,9 +157,14 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
     if (!newMode) {
       stopListening();
       stopSpeaking();
+      setTranscript('');
     } else if (newMode && !isListening && !isSpeaking) {
       startListening();
     }
+  };
+
+  const clearTranscript = () => {
+    setTranscript('');
   };
 
   return {
@@ -159,5 +178,6 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
     isSupported,
     isVoiceMode,
     toggleVoiceMode,
+    clearTranscript,
   };
 }
