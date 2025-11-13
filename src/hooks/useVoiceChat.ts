@@ -9,6 +9,8 @@ interface UseVoiceChatReturn {
   speak: (text: string) => void;
   stopSpeaking: () => void;
   isSupported: boolean;
+  isVoiceMode: boolean;
+  toggleVoiceMode: () => void;
 }
 
 export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
@@ -16,6 +18,7 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isSupported, setIsSupported] = useState(false);
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
 
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -132,6 +135,18 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
     }
   };
 
+  const toggleVoiceMode = () => {
+    const newMode = !isVoiceMode;
+    setIsVoiceMode(newMode);
+
+    if (!newMode) {
+      stopListening();
+      stopSpeaking();
+    } else if (newMode && !isListening && !isSpeaking) {
+      startListening();
+    }
+  };
+
   return {
     isListening,
     isSpeaking,
@@ -141,5 +156,7 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
     speak,
     stopSpeaking,
     isSupported,
+    isVoiceMode,
+    toggleVoiceMode,
   };
 }

@@ -233,6 +233,23 @@ export default function ChatInterface() {
     }
   }, [voiceChat.transcript, loading]);
 
+  useEffect(() => {
+    if (voiceChat.isVoiceMode && voiceChat.transcript && !voiceChat.isListening && !loading) {
+      const currentInput = voiceChat.transcript.trim();
+      if (currentInput) {
+        sendMessage();
+      }
+    }
+  }, [voiceChat.isListening, voiceChat.isVoiceMode]);
+
+  useEffect(() => {
+    if (voiceChat.isVoiceMode && !voiceChat.isSpeaking && !voiceChat.isListening && !loading) {
+      setTimeout(() => {
+        voiceChat.startListening();
+      }, 500);
+    }
+  }, [voiceChat.isSpeaking, voiceChat.isVoiceMode, loading]);
+
   const handleVoiceInput = () => {
     if (voiceChat.isListening) {
       voiceChat.stopListening();
@@ -626,26 +643,29 @@ export default function ChatInterface() {
             {voiceChat.isSupported && (
               <>
                 <button
-                  onClick={handleVoiceInput}
+                  onClick={voiceChat.toggleVoiceMode}
                   disabled={loading}
-                  className={`px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 ${
-                    voiceChat.isListening
-                      ? 'bg-red-500 text-white animate-pulse'
+                  className={`px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 relative ${
+                    voiceChat.isVoiceMode
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/50'
                       : 'bg-white/10 text-white hover:bg-white/20'
                   }`}
-                  title={voiceChat.isListening ? 'Stop listening' : 'Start voice input'}
+                  title={voiceChat.isVoiceMode ? 'Disable voice chat mode' : 'Enable voice chat mode'}
                 >
-                  {voiceChat.isListening ? <MicOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
+                  {voiceChat.isVoiceMode ? (
+                    <>
+                      <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                      {voiceChat.isListening && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                      )}
+                      {voiceChat.isSpeaking && (
+                        <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
+                      )}
+                    </>
+                  ) : (
+                    <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+                  )}
                 </button>
-                {voiceChat.isSpeaking && (
-                  <button
-                    onClick={voiceChat.stopSpeaking}
-                    className="px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 bg-orange-500 text-white animate-pulse"
-                    title="Stop speaking"
-                  >
-                    <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                )}
               </>
             )}
           </div>
