@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 
 interface UseVoiceChatReturn {
   isListening: boolean;
@@ -14,10 +14,10 @@ interface UseVoiceChatReturn {
   clearTranscript: () => void;
 }
 
-export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
+export function useVoiceChat(language: string = "it-IT"): UseVoiceChatReturn {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [transcript, setTranscript] = useState('');
+  const [transcript, setTranscript] = useState("");
   const [isSupported, setIsSupported] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
 
@@ -26,9 +26,11 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
   const silenceTimerRef = useRef<any>(null);
 
   useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
-    if (SpeechRecognition && 'speechSynthesis' in window) {
+    if (SpeechRecognition && "speechSynthesis" in window) {
       setIsSupported(true);
 
       const recognition = new SpeechRecognition();
@@ -39,17 +41,17 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
 
       recognition.onstart = () => {
         setIsListening(true);
-        setTranscript('');
+        setTranscript("");
       };
 
       recognition.onresult = (event: any) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
+        let finalTranscript = "";
+        let interimTranscript = "";
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' ';
+            finalTranscript += transcript + " ";
           } else {
             interimTranscript += transcript;
           }
@@ -75,7 +77,7 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
       };
 
       recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
+        console.error("Speech recognition error:", event.error);
         setIsListening(false);
       };
 
@@ -97,9 +99,27 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
       try {
+        // iOS requires explicit user interaction
+        recognitionRef.current.lang = language;
         recognitionRef.current.start();
       } catch (error) {
-        console.error('Failed to start recognition:', error);
+        console.error("Failed to start recognition:", error);
+        // If already started, stop and restart
+        if (
+          error instanceof Error &&
+          error.message.includes("already started")
+        ) {
+          try {
+            recognitionRef.current.stop();
+            setTimeout(() => {
+              if (recognitionRef.current) {
+                recognitionRef.current.start();
+              }
+            }, 100);
+          } catch (e) {
+            console.error("Failed to restart recognition:", e);
+          }
+        }
       }
     }
   };
@@ -111,18 +131,32 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
   };
 
   const speak = (text: string) => {
-    if ('speechSynthesis' in window) {
+    if ("speechSynthesis" in window) {
       speechSynthesis.cancel();
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = language;
       utterance.rate = 0.95;
       utterance.pitch = 1;
+      utterance.volume = 1;
 
-      const voices = speechSynthesis.getVoices();
-      const preferredVoice = voices.find(voice => voice.lang.startsWith(language.split('-')[0]));
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
+      // iOS requires voices to be loaded
+      const loadVoices = () => {
+        const voices = speechSynthesis.getVoices();
+        const preferredVoice = voices.find((voice) =>
+          voice.lang.startsWith(language.split("-")[0])
+        );
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+      };
+
+      if (speechSynthesis.getVoices().length > 0) {
+        loadVoices();
+      } else {
+        speechSynthesis.addEventListener("voiceschanged", loadVoices, {
+          once: true,
+        });
       }
 
       utterance.onstart = () => {
@@ -134,17 +168,21 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
       };
 
       utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
+        console.error("Speech synthesis error:", event);
         setIsSpeaking(false);
       };
 
       synthesisRef.current = utterance;
-      speechSynthesis.speak(utterance);
+
+      // iOS Safari requires a small delay
+      setTimeout(() => {
+        speechSynthesis.speak(utterance);
+      }, 100);
     }
   };
 
   const stopSpeaking = () => {
-    if ('speechSynthesis' in window && speechSynthesis.speaking) {
+    if ("speechSynthesis" in window && speechSynthesis.speaking) {
       speechSynthesis.cancel();
       setIsSpeaking(false);
     }
@@ -157,14 +195,17 @@ export function useVoiceChat(language: string = 'it-IT'): UseVoiceChatReturn {
     if (!newMode) {
       stopListening();
       stopSpeaking();
-      setTranscript('');
+      setTranscript("");
     } else if (newMode && !isListening && !isSpeaking) {
-      startListening();
+      // iOS requires user interaction to start, so we start immediately
+      setTimeout(() => {
+        startListening();
+      }, 100);
     }
   };
 
   const clearTranscript = () => {
-    setTranscript('');
+    setTranscript("");
   };
 
   return {

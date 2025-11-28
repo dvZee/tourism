@@ -1,50 +1,73 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Send, Loader2, Globe, User, Sparkles, MapPin, BookOpen, PanelLeftOpen, History, LogOut, UserCircle, Plus, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
-import { AIAgent, createConversation, getPersonas, loadConversation } from '../lib/ai-agent';
-import { getCurrentUser, signOut, getUserProfile } from '../lib/auth';
-import type { Persona, Message } from '../lib/supabase';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
-import type { UserProfile } from '../lib/auth';
-import AuthModal from './AuthModal';
-import ChatHistory from './ChatHistory';
-import { supabase } from '../lib/supabase';
-import { getTranslation, type Language } from '../lib/translations';
-import { useVoiceChat } from '../hooks/useVoiceChat';
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import {
+  Send,
+  Loader2,
+  Globe,
+  User,
+  Sparkles,
+  MapPin,
+  BookOpen,
+  PanelLeftOpen,
+  History,
+  LogOut,
+  UserCircle,
+  Plus,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import {
+  AIAgent,
+  createConversation,
+  getPersonas,
+  loadConversation,
+} from "../lib/ai-agent";
+import { getCurrentUser, signOut, getUserProfile } from "../lib/auth";
+import type { Persona, Message } from "../lib/supabase";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type { UserProfile } from "../lib/auth";
+import AuthModal from "./AuthModal";
+import ChatHistory from "./ChatHistory";
+import { supabase } from "../lib/supabase";
+import { getTranslation, type Language } from "../lib/translations";
+import { useVoiceChat } from "../hooks/useVoiceChat";
 
-const WelcomeAnimation = lazy(() => import('./WelcomeAnimation'));
+const WelcomeAnimation = lazy(() => import("./WelcomeAnimation"));
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [agent, setAgent] = useState<AIAgent | null>(null);
   const [personas, setPersonas] = useState<Persona[]>([]);
-  const [selectedPersona, setSelectedPersona] = useState<string>('');
-  const [language, setLanguage] = useState<Language>('it');
+  const [selectedPersona, setSelectedPersona] = useState<string>("");
+  const [language, setLanguage] = useState<Language>("it");
   const [initialized, setInitialized] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showChatHistory, setShowChatHistory] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [conversationId, setConversationId] = useState<string>('');
+  const [conversationId, setConversationId] = useState<string>("");
   const [showWelcome, setShowWelcome] = useState(() => {
-    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+    const hasSeenWelcome = localStorage.getItem("hasSeenWelcome");
     return !hasSeenWelcome;
   });
   const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [voiceError, setVoiceError] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const languageMap: Record<Language, string> = {
-    'en': 'en-US',
-    'it': 'it-IT',
-    'es': 'es-ES'
+    en: "en-US",
+    it: "it-IT",
+    es: "es-ES",
   };
 
   const voiceChat = useVoiceChat(languageMap[language]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -55,15 +78,17 @@ export default function ChatInterface() {
     initializeChat();
     checkAuth();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        setUser(session?.user || null);
-        loadUserProfile(session?.user?.id || '');
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setUserProfile(null);
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_IN") {
+          setUser(session?.user || null);
+          loadUserProfile(session?.user?.id || "");
+        } else if (event === "SIGNED_OUT") {
+          setUser(null);
+          setUserProfile(null);
+        }
       }
-    });
+    );
 
     return () => {
       authListener.subscription.unsubscribe();
@@ -83,13 +108,13 @@ export default function ChatInterface() {
       const profile = await getUserProfile(userId);
       setUserProfile(profile);
       if (profile?.preferred_language) {
-        setLanguage(profile.preferred_language as 'en' | 'it' | 'es');
+        setLanguage(profile.preferred_language as "en" | "it" | "es");
       }
       if (profile?.preferred_persona_id) {
         setSelectedPersona(profile.preferred_persona_id);
       }
     } catch (error) {
-      console.error('Failed to load user profile:', error);
+      console.error("Failed to load user profile:", error);
     }
   };
 
@@ -99,13 +124,17 @@ export default function ChatInterface() {
       setPersonas(personasList);
 
       const currentUser = await getCurrentUser();
-      const convId = await createConversation(language, undefined, currentUser?.id);
+      const convId = await createConversation(
+        language,
+        undefined,
+        currentUser?.id
+      );
       setConversationId(convId);
       const newAgent = new AIAgent(convId, language);
       setAgent(newAgent);
       setInitialized(true);
     } catch (error) {
-      console.error('Failed to initialize chat:', error);
+      console.error("Failed to initialize chat:", error);
       setInitialized(true);
     }
   };
@@ -117,7 +146,11 @@ export default function ChatInterface() {
     }
 
     try {
-      const convId = await createConversation(language, selectedPersona || undefined, user?.id);
+      const convId = await createConversation(
+        language,
+        selectedPersona || undefined,
+        user?.id
+      );
       setConversationId(convId);
       const newAgent = new AIAgent(convId, language);
       if (selectedPersona) {
@@ -128,13 +161,17 @@ export default function ChatInterface() {
       setShowMobileMenu(false);
       setShowSavePrompt(false);
     } catch (error) {
-      console.error('Failed to create conversation:', error);
+      console.error("Failed to create conversation:", error);
     }
   };
 
   const handleEndConversationWithoutSave = async () => {
     setShowSavePrompt(false);
-    const convId = await createConversation(language, selectedPersona || undefined, user?.id);
+    const convId = await createConversation(
+      language,
+      selectedPersona || undefined,
+      user?.id
+    );
     setConversationId(convId);
     const newAgent = new AIAgent(convId, language);
     if (selectedPersona) {
@@ -153,7 +190,7 @@ export default function ChatInterface() {
       const history = await loadConversation(convId);
       setMessages(history);
     } catch (error) {
-      console.error('Failed to load conversation:', error);
+      console.error("Failed to load conversation:", error);
     }
   };
 
@@ -163,7 +200,7 @@ export default function ChatInterface() {
     await agent.setPersona(personaId);
   };
 
-  const handleLanguageChange = async (lang: 'en' | 'it' | 'es') => {
+  const handleLanguageChange = async (lang: "en" | "it" | "es") => {
     setLanguage(lang);
     if (agent) {
       agent.language = lang;
@@ -181,43 +218,43 @@ export default function ChatInterface() {
     if (!input.trim() || !agent || loading) return;
 
     const userMessage = input.trim();
-    setInput('');
+    setInput("");
     setLoading(true);
 
     const tempUserMessage: Message = {
       id: Date.now().toString(),
-      conversation_id: '',
-      role: 'user',
+      conversation_id: "",
+      role: "user",
       content: userMessage,
       created_at: new Date().toISOString(),
     };
-    setMessages(prev => [...prev, tempUserMessage]);
+    setMessages((prev) => [...prev, tempUserMessage]);
 
     try {
       const response = await agent.generateResponse(userMessage);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        conversation_id: '',
-        role: 'assistant',
+        conversation_id: "",
+        role: "assistant",
         content: response.content,
         created_at: new Date().toISOString(),
       };
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
 
       if (voiceChat.isSupported && voiceChat.isVoiceMode) {
         voiceChat.speak(response.content);
       }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error("Failed to send message:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        conversation_id: '',
-        role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        conversation_id: "",
+        role: "assistant",
+        content: "Sorry, I encountered an error. Please try again.",
         created_at: new Date().toISOString(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
     }
@@ -230,7 +267,12 @@ export default function ChatInterface() {
   }, [voiceChat.transcript, loading]);
 
   useEffect(() => {
-    if (voiceChat.isVoiceMode && voiceChat.transcript && !voiceChat.isListening && !loading) {
+    if (
+      voiceChat.isVoiceMode &&
+      voiceChat.transcript &&
+      !voiceChat.isListening &&
+      !loading
+    ) {
       const currentInput = voiceChat.transcript.trim();
       if (currentInput) {
         const processMessage = async () => {
@@ -243,11 +285,21 @@ export default function ChatInterface() {
   }, [voiceChat.isListening, voiceChat.isVoiceMode]);
 
   useEffect(() => {
-    if (voiceChat.isVoiceMode && !voiceChat.isSpeaking && !voiceChat.isListening && !loading && messages.length > 0) {
+    if (
+      voiceChat.isVoiceMode &&
+      !voiceChat.isSpeaking &&
+      !voiceChat.isListening &&
+      !loading &&
+      messages.length > 0
+    ) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'assistant') {
+      if (lastMessage.role === "assistant") {
         setTimeout(() => {
-          if (voiceChat.isVoiceMode && !voiceChat.isListening && !voiceChat.isSpeaking) {
+          if (
+            voiceChat.isVoiceMode &&
+            !voiceChat.isListening &&
+            !voiceChat.isSpeaking
+          ) {
             voiceChat.startListening();
           }
         }, 1000);
@@ -262,12 +314,20 @@ export default function ChatInterface() {
         sendMessage();
       }
     } else {
-      voiceChat.startListening();
+      try {
+        voiceChat.startListening();
+        setVoiceError("");
+      } catch (error) {
+        console.error("Voice input error:", error);
+        setVoiceError(
+          "Voice input not available. Please check microphone permissions."
+        );
+      }
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
@@ -279,14 +339,20 @@ export default function ChatInterface() {
 
   if (showWelcome) {
     return (
-      <Suspense fallback={<div className="flex items-center justify-center h-full bg-bg-primary"><Loader2 className="w-12 h-12 text-accent-primary animate-spin" /></div>}>
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center h-full bg-bg-primary">
+            <Loader2 className="w-12 h-12 text-accent-primary animate-spin" />
+          </div>
+        }
+      >
         <WelcomeAnimation
           onComplete={() => {
-            localStorage.setItem('hasSeenWelcome', 'true');
+            localStorage.setItem("hasSeenWelcome", "true");
             setShowWelcome(false);
           }}
           onSkip={() => {
-            localStorage.setItem('hasSeenWelcome', 'true');
+            localStorage.setItem("hasSeenWelcome", "true");
             setShowWelcome(false);
           }}
         />
@@ -295,9 +361,11 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-bg-primary font-breton relative overflow-hidden">
-
-      <header className="relative bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-2xl font-breton">
+    <div
+      className="flex flex-col h-full bg-bg-primary font-breton relative overflow-hidden"
+      style={{ height: "100%", maxHeight: "100dvh" }}
+    >
+      <header className="relative bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-2xl font-breton flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -308,10 +376,12 @@ export default function ChatInterface() {
                 <Sparkles className="w-3 h-3 text-accent-primary absolute -top-0.5 -right-0.5 animate-pulse" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-lg sm:text-xl font-bold text-white">{getTranslation(language, 'appTitle')}</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-white">
+                  {getTranslation(language, "appTitle")}
+                </h1>
                 <p className="text-xs text-white/70 flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
-                  {getTranslation(language, 'appSubtitle')}
+                  {getTranslation(language, "appSubtitle")}
                 </p>
               </div>
             </div>
@@ -319,34 +389,34 @@ export default function ChatInterface() {
             <div className="flex items-center gap-3">
               <div className="hidden lg:flex items-center gap-2 bg-white/5 backdrop-blur-sm p-1 rounded-xl border border-white/10">
                 <button
-                  onClick={() => handleLanguageChange('en')}
+                  onClick={() => handleLanguageChange("en")}
                   className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
-                    language === 'en'
-                      ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/50 scale-105'
-                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    language === "en"
+                      ? "bg-accent-primary text-white shadow-lg shadow-accent-primary/50 scale-105"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >
-                  {getTranslation(language, 'english')}
+                  {getTranslation(language, "english")}
                 </button>
                 <button
-                  onClick={() => handleLanguageChange('it')}
+                  onClick={() => handleLanguageChange("it")}
                   className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
-                    language === 'it'
-                      ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/50 scale-105'
-                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    language === "it"
+                      ? "bg-accent-primary text-white shadow-lg shadow-accent-primary/50 scale-105"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >
-                  {getTranslation(language, 'italian')}
+                  {getTranslation(language, "italian")}
                 </button>
                 <button
-                  onClick={() => handleLanguageChange('es')}
+                  onClick={() => handleLanguageChange("es")}
                   className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
-                    language === 'es'
-                      ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/50 scale-105'
-                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    language === "es"
+                      ? "bg-accent-primary text-white shadow-lg shadow-accent-primary/50 scale-105"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >
-                  {getTranslation(language, 'spanish')}
+                  {getTranslation(language, "spanish")}
                 </button>
               </div>
 
@@ -355,14 +425,14 @@ export default function ChatInterface() {
                   <button
                     onClick={startNewConversation}
                     className="p-2 hover:bg-white/20 text-white rounded-xl transition-all"
-                    title={getTranslation(language, 'newChat')}
+                    title={getTranslation(language, "newChat")}
                   >
                     <Plus className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setShowChatHistory(true)}
                     className="p-2 hover:bg-white/20 text-white rounded-xl transition-all"
-                    title={getTranslation(language, 'chatHistory')}
+                    title={getTranslation(language, "chatHistory")}
                   >
                     <History className="w-5 h-5" />
                   </button>
@@ -374,7 +444,7 @@ export default function ChatInterface() {
                   >
                     <UserCircle className="w-5 h-5" />
                     <span className="text-sm font-medium hidden xl:inline max-w-32 truncate">
-                      {userProfile?.display_name || user.email?.split('@')[0]}
+                      {userProfile?.display_name || user.email?.split("@")[0]}
                     </span>
                     <LogOut className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
@@ -385,7 +455,9 @@ export default function ChatInterface() {
                   className="hidden sm:flex items-center gap-2 px-4 py-2 bg-accent-primary text-white rounded-xl font-medium hover:shadow-lg hover:shadow-accent-primary/50 transition-all"
                 >
                   <UserCircle className="w-5 h-5" />
-                  <span className="text-sm">{getTranslation(language, 'signIn')}</span>
+                  <span className="text-sm">
+                    {getTranslation(language, "signIn")}
+                  </span>
                 </button>
               )}
 
@@ -400,7 +472,9 @@ export default function ChatInterface() {
 
           {user && personas.length > 0 && (
             <div className="hidden md:flex items-center justify-center gap-2 mt-3 pt-3 border-t border-white/10">
-              <span className="text-xs text-white/70 font-medium">Persona:</span>
+              <span className="text-xs text-white/70 font-medium">
+                Persona:
+              </span>
               <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm p-1 rounded-lg border border-white/10">
                 {personas.map((persona) => (
                   <button
@@ -408,16 +482,17 @@ export default function ChatInterface() {
                     onClick={() => handlePersonaChange(persona.id)}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-300 ${
                       selectedPersona === persona.id
-                        ? 'bg-accent-primary text-white shadow-md'
-                        : 'text-white/70 hover:bg-white/10 hover:text-white'
+                        ? "bg-accent-primary text-white shadow-md"
+                        : "text-white/70 hover:bg-white/10 hover:text-white"
                     }`}
                   >
-                    {persona.name.charAt(0).toUpperCase() + persona.name.slice(1)}
+                    {persona.name.charAt(0).toUpperCase() +
+                      persona.name.slice(1)}
                   </button>
                 ))}
                 {selectedPersona && (
                   <button
-                    onClick={() => handlePersonaChange('')}
+                    onClick={() => handlePersonaChange("")}
                     className="px-3 py-1 rounded-md text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-300"
                   >
                     Default
@@ -431,34 +506,34 @@ export default function ChatInterface() {
             <div className="sm:hidden mt-4 pt-4 border-t border-white/20 space-y-2 animate-slide-up">
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleLanguageChange('en')}
+                  onClick={() => handleLanguageChange("en")}
                   className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                    language === 'en'
-                      ? 'bg-accent-primary text-white'
-                      : 'bg-white/10 text-white/70'
+                    language === "en"
+                      ? "bg-accent-primary text-white"
+                      : "bg-white/10 text-white/70"
                   }`}
                 >
-                  {getTranslation(language, 'english')}
+                  {getTranslation(language, "english")}
                 </button>
                 <button
-                  onClick={() => handleLanguageChange('it')}
+                  onClick={() => handleLanguageChange("it")}
                   className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                    language === 'it'
-                      ? 'bg-accent-primary text-white'
-                      : 'bg-white/10 text-white/70'
+                    language === "it"
+                      ? "bg-accent-primary text-white"
+                      : "bg-white/10 text-white/70"
                   }`}
                 >
-                  {getTranslation(language, 'italian')}
+                  {getTranslation(language, "italian")}
                 </button>
                 <button
-                  onClick={() => handleLanguageChange('es')}
+                  onClick={() => handleLanguageChange("es")}
                   className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                    language === 'es'
-                      ? 'bg-accent-primary text-white'
-                      : 'bg-white/10 text-white/70'
+                    language === "es"
+                      ? "bg-accent-primary text-white"
+                      : "bg-white/10 text-white/70"
                   }`}
                 >
-                  {getTranslation(language, 'spanish')}
+                  {getTranslation(language, "spanish")}
                 </button>
               </div>
               <select
@@ -466,10 +541,18 @@ export default function ChatInterface() {
                 onChange={(e) => handlePersonaChange(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl text-xs font-medium bg-white/10 border border-white/20 text-white"
               >
-                <option value="" className="bg-slate-900">Select persona...</option>
+                <option value="" className="bg-slate-900">
+                  Select persona...
+                </option>
                 {personas.map((persona) => (
-                  <option key={persona.id} value={persona.id} className="bg-slate-900">
-                    {persona.name.charAt(0).toUpperCase() + persona.name.slice(1)} - {persona.description}
+                  <option
+                    key={persona.id}
+                    value={persona.id}
+                    className="bg-slate-900"
+                  >
+                    {persona.name.charAt(0).toUpperCase() +
+                      persona.name.slice(1)}{" "}
+                    - {persona.description}
                   </option>
                 ))}
               </select>
@@ -517,23 +600,40 @@ export default function ChatInterface() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto relative" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <main
+        className="flex-1 overflow-y-auto relative"
+        style={{
+          paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+          WebkitOverflowScrolling: "touch",
+          overscrollBehavior: "contain",
+        }}
+      >
         {voiceChat.isVoiceMode ? (
-          <div className="h-full flex items-center justify-center px-4">
-            <div className="text-center max-w-2xl mx-auto">
-              <div className="relative mb-8">
-                <div className={`absolute inset-0 rounded-full blur-3xl opacity-40 animate-pulse ${
-                  loading ? 'bg-yellow-500' : voiceChat.isListening ? 'bg-red-500' : voiceChat.isSpeaking ? 'bg-blue-500' : 'bg-accent-primary'
-                }`}></div>
-                <div className={`relative w-48 h-48 mx-auto rounded-full flex items-center justify-center transition-all duration-500 ${
-                  loading
-                    ? 'bg-gradient-to-br from-yellow-500 to-orange-600 shadow-2xl shadow-yellow-500/50 scale-110'
-                    : voiceChat.isListening
-                    ? 'bg-gradient-to-br from-red-500 to-red-600 shadow-2xl shadow-red-500/50 scale-110'
-                    : voiceChat.isSpeaking
-                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-2xl shadow-blue-500/50 scale-110'
-                    : 'bg-gradient-to-br from-accent-primary to-purple-600 shadow-2xl shadow-accent-primary/50'
-                }`}>
+          <div className="h-full flex items-center justify-center px-4 py-8">
+            <div className="text-center max-w-2xl mx-auto w-full">
+              <div className="relative mb-8 flex justify-center">
+                <div
+                  className={`absolute inset-0 rounded-full blur-3xl opacity-40 animate-pulse ${
+                    loading
+                      ? "bg-yellow-500"
+                      : voiceChat.isListening
+                      ? "bg-red-500"
+                      : voiceChat.isSpeaking
+                      ? "bg-blue-500"
+                      : "bg-accent-primary"
+                  }`}
+                ></div>
+                <div
+                  className={`relative w-48 h-48 mx-auto rounded-full flex items-center justify-center transition-all duration-500 ${
+                    loading
+                      ? "bg-gradient-to-br from-yellow-500 to-orange-600 shadow-2xl shadow-yellow-500/50 scale-110"
+                      : voiceChat.isListening
+                      ? "bg-gradient-to-br from-red-500 to-red-600 shadow-2xl shadow-red-500/50 scale-110"
+                      : voiceChat.isSpeaking
+                      ? "bg-gradient-to-br from-blue-500 to-blue-600 shadow-2xl shadow-blue-500/50 scale-110"
+                      : "bg-gradient-to-br from-accent-primary to-purple-600 shadow-2xl shadow-accent-primary/50"
+                  }`}
+                >
                   {loading ? (
                     <Loader2 className="w-24 h-24 text-white animate-spin" />
                   ) : voiceChat.isListening ? (
@@ -562,138 +662,192 @@ export default function ChatInterface() {
               </div>
 
               <h2 className="text-4xl font-bold text-white mb-4">
-                {loading ? getTranslation(language, 'thinking') || 'Thinking...' :
-                 voiceChat.isListening ? getTranslation(language, 'listening') || 'Listening...' :
-                 voiceChat.isSpeaking ? getTranslation(language, 'speaking') || 'Speaking...' :
-                 getTranslation(language, 'voiceModeReady') || 'Ready to listen'}
+                {loading
+                  ? getTranslation(language, "thinking") || "Thinking..."
+                  : voiceChat.isListening
+                  ? getTranslation(language, "listening") || "Listening..."
+                  : voiceChat.isSpeaking
+                  ? getTranslation(language, "speaking") || "Speaking..."
+                  : getTranslation(language, "voiceModeReady") ||
+                    "Ready to listen"}
               </h2>
 
               {voiceChat.transcript && (
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20">
-                  <p className="text-white/80 text-lg">{voiceChat.transcript}</p>
+                  <p className="text-white/80 text-lg">
+                    {voiceChat.transcript}
+                  </p>
                 </div>
               )}
 
-              {messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
-                <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20">
-                  <p className="text-gray-900 text-lg leading-relaxed">{messages[messages.length - 1].content}</p>
-                </div>
-              )}
+              {messages.length > 0 &&
+                messages[messages.length - 1].role === "assistant" && (
+                  <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20">
+                    <p className="text-gray-900 text-lg leading-relaxed">
+                      {messages[messages.length - 1].content}
+                    </p>
+                  </div>
+                )}
 
               <p className="text-white/60 text-sm">
-                {loading ? 'Processing your question and searching knowledge base...' :
-                 voiceChat.isListening ? getTranslation(language, 'speakNow') || 'Speak your question now' :
-                 voiceChat.isSpeaking ? getTranslation(language, 'aiResponding') || 'AI is responding' :
-                 getTranslation(language, 'waitingForYou') || 'Waiting for your question'}
+                {loading
+                  ? "Processing your question and searching knowledge base..."
+                  : voiceChat.isListening
+                  ? getTranslation(language, "speakNow") ||
+                    "Speak your question now"
+                  : voiceChat.isSpeaking
+                  ? getTranslation(language, "aiResponding") ||
+                    "AI is responding"
+                  : getTranslation(language, "waitingForYou") ||
+                    "Waiting for your question"}
               </p>
+
+              {voiceError && (
+                <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl">
+                  <p className="text-red-200 text-sm">{voiceError}</p>
+                </div>
+              )}
             </div>
           </div>
         ) : (
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          {messages.length === 0 ? (
-            <div className="text-center py-12 sm:py-16 animate-fade-in">
-              <div className="relative inline-block mb-6">
-                <div className="absolute inset-0 bg-accent-primary rounded-full blur-2xl opacity-30 animate-pulse"></div>
-                <div className="relative inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-accent-primary rounded-full shadow-2xl">
-                  <Globe className="w-10 h-10 sm:w-12 sm:h-12 text-white animate-pulse" />
+            {messages.length === 0 ? (
+              <div className="text-center py-12 sm:py-16 animate-fade-in">
+                <div className="relative inline-block mb-6">
+                  <div className="absolute inset-0 bg-accent-primary rounded-full blur-2xl opacity-30 animate-pulse"></div>
+                  <div className="relative inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-accent-primary rounded-full shadow-2xl">
+                    <Globe className="w-10 h-10 sm:w-12 sm:h-12 text-white animate-pulse" />
+                  </div>
+                </div>
+                <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3">
+                  {getTranslation(language, "welcomeTitle")}
+                </h2>
+                <p className="text-white/80 text-base sm:text-lg mb-8 max-w-2xl mx-auto leading-relaxed px-4">
+                  {getTranslation(language, "welcomeSubtitle")}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto px-4">
+                  <button
+                    onClick={() =>
+                      setInput(getTranslation(language, "exampleColosseum"))
+                    }
+                    className="group p-4 sm:p-6 text-left bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 hover:border-accent-primary/50 hover:shadow-2xl hover:shadow-accent-primary/20 transition-all duration-300 hover:scale-105"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-accent-primary rounded-lg group-hover:scale-110 transition-transform">
+                        <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white mb-1 text-sm sm:text-base">
+                          {getTranslation(language, "exampleColosseum")}
+                        </p>
+                        <p className="text-xs sm:text-sm text-white/70">
+                          {getTranslation(
+                            language,
+                            "exampleColeosseumSubtitle"
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() =>
+                      setInput(getTranslation(language, "exampleLegends"))
+                    }
+                    className="group p-4 sm:p-6 text-left bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 hover:border-accent-primary/50 hover:shadow-2xl hover:shadow-accent-primary/20 transition-all duration-300 hover:scale-105"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-accent-primary rounded-lg group-hover:scale-110 transition-transform">
+                        <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white mb-1 text-sm sm:text-base">
+                          {getTranslation(language, "exampleLegends")}
+                        </p>
+                        <p className="text-xs sm:text-sm text-white/70">
+                          {getTranslation(language, "exampleLegendsSubtitle")}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
                 </div>
               </div>
-              <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3">
-                {getTranslation(language, 'welcomeTitle')}
-              </h2>
-              <p className="text-white/80 text-base sm:text-lg mb-8 max-w-2xl mx-auto leading-relaxed px-4">
-                {getTranslation(language, 'welcomeSubtitle')}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto px-4">
-                <button
-                  onClick={() => setInput(getTranslation(language, 'exampleColosseum'))}
-                  className="group p-4 sm:p-6 text-left bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 hover:border-accent-primary/50 hover:shadow-2xl hover:shadow-accent-primary/20 transition-all duration-300 hover:scale-105"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-accent-primary rounded-lg group-hover:scale-110 transition-transform">
-                      <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-white mb-1 text-sm sm:text-base">{getTranslation(language, 'exampleColosseum')}</p>
-                      <p className="text-xs sm:text-sm text-white/70">{getTranslation(language, 'exampleColeosseumSubtitle')}</p>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setInput(getTranslation(language, 'exampleLegends'))}
-                  className="group p-4 sm:p-6 text-left bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 hover:border-accent-primary/50 hover:shadow-2xl hover:shadow-accent-primary/20 transition-all duration-300 hover:scale-105"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-accent-primary rounded-lg group-hover:scale-110 transition-transform">
-                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-white mb-1 text-sm sm:text-base">{getTranslation(language, 'exampleLegends')}</p>
-                      <p className="text-xs sm:text-sm text-white/70">{getTranslation(language, 'exampleLegendsSubtitle')}</p>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4 sm:space-y-6">
-              {messages.map((message, index) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-3 sm:gap-4 animate-slide-up ${
-                    message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                  }`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
+            ) : (
+              <div className="space-y-4 sm:space-y-6">
+                {messages.map((message, index) => (
                   <div
-                    className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-lg ${
-                      message.role === 'user'
-                        ? 'bg-accent-primary'
-                        : 'bg-accent-primary'
+                    key={message.id}
+                    className={`flex gap-3 sm:gap-4 animate-slide-up ${
+                      message.role === "user" ? "flex-row-reverse" : "flex-row"
                     }`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    {message.role === 'user' ? (
-                      <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                    ) : (
+                    <div
+                      className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-lg ${
+                        message.role === "user"
+                          ? "bg-accent-primary"
+                          : "bg-accent-primary"
+                      }`}
+                    >
+                      {message.role === "user" ? (
+                        <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      ) : (
+                        <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      )}
+                    </div>
+                    <div
+                      className={`flex-1 max-w-2xl p-4 sm:p-5 rounded-2xl shadow-xl transition-all duration-300 hover:scale-[1.02] ${
+                        message.role === "user"
+                          ? "bg-accent-primary text-white"
+                          : "bg-white/95 backdrop-blur-sm text-gray-900 border border-white/20"
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap leading-relaxed text-sm sm:text-base">
+                        {message.content}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                {loading && (
+                  <div className="flex gap-3 sm:gap-4 animate-slide-up">
+                    <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-accent-primary flex items-center justify-center shadow-lg">
                       <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                    )}
-                  </div>
-                  <div
-                    className={`flex-1 max-w-2xl p-4 sm:p-5 rounded-2xl shadow-xl transition-all duration-300 hover:scale-[1.02] ${
-                      message.role === 'user'
-                        ? 'bg-accent-primary text-white'
-                        : 'bg-white/95 backdrop-blur-sm text-gray-900 border border-white/20'
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap leading-relaxed text-sm sm:text-base">{message.content}</p>
-                  </div>
-                </div>
-              ))}
-              {loading && (
-                <div className="flex gap-3 sm:gap-4 animate-slide-up">
-                  <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-accent-primary flex items-center justify-center shadow-lg">
-                    <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                  <div className="flex-1 max-w-2xl p-4 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-sm shadow-xl border border-white/20">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-5 h-5 animate-spin text-accent-primary" />
-                      <div className="flex gap-1">
-                        <span className="w-2 h-2 bg-accent-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                        <span className="w-2 h-2 bg-accent-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                        <span className="w-2 h-2 bg-accent-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    </div>
+                    <div className="flex-1 max-w-2xl p-4 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-sm shadow-xl border border-white/20">
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin text-accent-primary" />
+                        <div className="flex gap-1">
+                          <span
+                            className="w-2 h-2 bg-accent-primary rounded-full animate-bounce"
+                            style={{ animationDelay: "0ms" }}
+                          ></span>
+                          <span
+                            className="w-2 h-2 bg-accent-primary rounded-full animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          ></span>
+                          <span
+                            className="w-2 h-2 bg-accent-primary rounded-full animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          ></span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
           </div>
         )}
       </main>
 
-      <footer className="relative bg-white/10 backdrop-blur-xl border-t border-white/20 flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <footer
+        className="relative bg-white/10 backdrop-blur-xl border-t border-white/20 flex-shrink-0 z-10"
+        style={{
+          paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+          position: "sticky",
+          bottom: 0,
+        }}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
           {voiceChat.isVoiceMode ? (
             <div className="flex items-center justify-center gap-4">
@@ -702,7 +856,7 @@ export default function ChatInterface() {
                 className="px-8 py-4 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white shadow-2xl shadow-red-500/50 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 text-lg font-semibold"
               >
                 <VolumeX className="w-6 h-6" />
-                {getTranslation(language, 'exitVoiceMode') || 'Exit Voice Mode'}
+                {getTranslation(language, "exitVoiceMode") || "Exit Voice Mode"}
               </button>
             </div>
           ) : (
@@ -713,8 +867,9 @@ export default function ChatInterface() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={getTranslation(language, 'inputPlaceholder')}
-                  className="w-full pl-4 sm:pl-6 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-white placeholder-white/60 transition-all disabled:opacity-50 text-sm sm:text-base"
+                  placeholder={getTranslation(language, "inputPlaceholder")}
+                  className="w-full pl-4 sm:pl-6 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-white placeholder-white/60 transition-all disabled:opacity-50"
+                  style={{ fontSize: "16px" }}
                   disabled={loading}
                 />
                 <button
@@ -722,6 +877,7 @@ export default function ChatInterface() {
                   disabled={loading || !input.trim()}
                   className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-accent-primary text-white hover:bg-accent-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 active:scale-95"
                   title="Send message"
+                  style={{ minHeight: "40px", minWidth: "40px" }}
                 >
                   {loading ? (
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
@@ -734,10 +890,11 @@ export default function ChatInterface() {
                 <button
                   onClick={voiceChat.toggleVoiceMode}
                   disabled={loading}
-                  className="px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl"
+                  className="px-4 sm:px-5 py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Enable voice chat mode"
+                  style={{ minHeight: "44px", minWidth: "44px" }}
                 >
-                  <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Mic className="w-5 h-5 sm:w-5 sm:h-5" />
                 </button>
               )}
             </div>
@@ -772,10 +929,10 @@ export default function ChatInterface() {
                 <History className="w-8 h-8 text-yellow-400" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">
-                {getTranslation(language, 'saveConversationTitle')}
+                {getTranslation(language, "saveConversationTitle")}
               </h2>
               <p className="text-white/70 text-sm">
-                {getTranslation(language, 'saveConversationMessage')}
+                {getTranslation(language, "saveConversationMessage")}
               </p>
             </div>
 
@@ -784,19 +941,19 @@ export default function ChatInterface() {
                 onClick={() => setShowAuthModal(true)}
                 className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:scale-105 transition-transform duration-200 shadow-lg"
               >
-                {getTranslation(language, 'createAccount')}
+                {getTranslation(language, "createAccount")}
               </button>
               <button
                 onClick={handleEndConversationWithoutSave}
                 className="w-full px-6 py-3 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-colors duration-200"
               >
-                {getTranslation(language, 'continueWithoutSaving')}
+                {getTranslation(language, "continueWithoutSaving")}
               </button>
               <button
                 onClick={() => setShowSavePrompt(false)}
                 className="w-full px-6 py-3 text-white/70 hover:text-white transition-colors duration-200 text-sm"
               >
-                {getTranslation(language, 'cancel')}
+                {getTranslation(language, "cancel")}
               </button>
             </div>
           </div>

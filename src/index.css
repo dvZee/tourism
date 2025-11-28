@@ -3,19 +3,36 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
+  html,
+  body {
     margin: 0;
     padding: 0;
     height: 100%;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
     overflow: hidden;
     position: fixed;
     width: 100%;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
   }
 
   #root {
     height: 100%;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* iOS specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    html,
+    body,
+    #root {
+      height: -webkit-fill-available;
+    }
   }
 }
 
@@ -46,5 +63,29 @@
 
   .animate-fade-in {
     animation: fade-in 0.8s ease-out forwards;
+  }
+
+  /* Mobile-specific improvements */
+  @media (max-width: 640px) {
+    /* Prevent zoom on input focus */
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+
+    /* Improve touch targets */
+    button {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* iOS Safari specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    /* Fix for iOS Safari bottom bar */
+    .ios-safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
   }
 }
