@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import ReactMarkdown from "react-markdown";
 import {
   Send,
   Loader2,
@@ -243,7 +244,16 @@ export default function ChatInterface() {
       setMessages((prev) => [...prev, assistantMessage]);
 
       if (voiceChat.isSupported && voiceChat.isVoiceMode) {
-        voiceChat.speak(response.content);
+        // Remove markdown formatting for cleaner speech
+        const cleanText = response.content
+          .replace(/\*\*(.+?)\*\*/g, "$1") // Remove bold
+          .replace(/\*(.+?)\*/g, "$1") // Remove italic
+          .replace(/_(.+?)_/g, "$1") // Remove underline
+          .replace(/#{1,6}\s/g, "") // Remove headers
+          .replace(/\[(.+?)\]\(.+?\)/g, "$1") // Remove links, keep text
+          .replace(/`(.+?)`/g, "$1") // Remove code blocks
+          .replace(/>\s/g, ""); // Remove blockquotes
+        voiceChat.speak(cleanText);
       }
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -294,18 +304,26 @@ export default function ChatInterface() {
     ) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === "assistant") {
+        // Shorter delay for smoother experience
         setTimeout(() => {
           if (
             voiceChat.isVoiceMode &&
             !voiceChat.isListening &&
-            !voiceChat.isSpeaking
+            !voiceChat.isSpeaking &&
+            !loading
           ) {
             voiceChat.startListening();
           }
-        }, 1000);
+        }, 500);
       }
     }
-  }, [messages, voiceChat.isSpeaking, voiceChat.isVoiceMode, loading]);
+  }, [
+    messages,
+    voiceChat.isSpeaking,
+    voiceChat.isVoiceMode,
+    loading,
+    voiceChat.isListening,
+  ]);
 
   const handleVoiceInput = () => {
     if (voiceChat.isListening) {
@@ -609,7 +627,7 @@ export default function ChatInterface() {
         }}
       >
         {voiceChat.isVoiceMode ? (
-          <div className="h-full flex items-center justify-center px-4 py-8">
+          <div className="h-full flex items-center justify-center px-4 py-8 relative">
             <div className="text-center max-w-2xl mx-auto w-full">
               <div className="relative mb-8 flex justify-center">
                 <div
@@ -672,20 +690,23 @@ export default function ChatInterface() {
                     "Ready to listen"}
               </h2>
 
-              {voiceChat.transcript && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20">
+              {voiceChat.transcript && voiceChat.isListening && (
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20 animate-fade-in">
                   <p className="text-white/80 text-lg">
                     {voiceChat.transcript}
                   </p>
                 </div>
               )}
 
-              {messages.length > 0 &&
+              {voiceChat.isSpeaking &&
+                messages.length > 0 &&
                 messages[messages.length - 1].role === "assistant" && (
-                  <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20">
-                    <p className="text-gray-900 text-lg leading-relaxed">
-                      {messages[messages.length - 1].content}
-                    </p>
+                  <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20 max-h-64 overflow-y-auto animate-fade-in">
+                    <div className="text-gray-900 text-lg leading-relaxed prose prose-sm max-w-none">
+                      <ReactMarkdown>
+                        {messages[messages.length - 1].content}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 )}
 
@@ -703,7 +724,7 @@ export default function ChatInterface() {
               </p>
 
               {voiceError && (
-                <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl">
+                <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl animate-fade-in">
                   <p className="text-red-200 text-sm">{voiceError}</p>
                 </div>
               )}
@@ -801,9 +822,15 @@ export default function ChatInterface() {
                           : "bg-white/95 backdrop-blur-sm text-gray-900 border border-white/20"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap leading-relaxed text-sm sm:text-base">
-                        {message.content}
-                      </p>
+                      {message.role === "user" ? (
+                        <p className="whitespace-pre-wrap leading-relaxed text-sm sm:text-base">
+                          {message.content}
+                        </p>
+                      ) : (
+                        <div className="prose prose-sm sm:prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-900 prose-strong:text-gray-900 prose-em:text-gray-800 prose-ul:text-gray-900 prose-ol:text-gray-900">
+                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

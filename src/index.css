@@ -88,4 +88,75 @@
       padding-bottom: env(safe-area-inset-bottom);
     }
   }
+
+  /* Markdown styling */
+  .prose {
+    color: inherit;
+  }
+
+  .prose strong {
+    font-weight: 700;
+    color: inherit;
+  }
+
+  .prose em {
+    font-style: italic;
+    color: inherit;
+  }
+
+  .prose p {
+    margin-bottom: 0.75em;
+    line-height: 1.6;
+  }
+
+  .prose p:last-child {
+    margin-bottom: 0;
+  }
+
+  .prose ul,
+  .prose ol {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-left: 1.5em;
+  }
+
+  .prose li {
+    margin-bottom: 0.25em;
+  }
+
+  .prose h1,
+  .prose h2,
+  .prose h3 {
+    font-weight: 700;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+  }
+
+  .prose h1 {
+    font-size: 1.5em;
+  }
+
+  .prose h2 {
+    font-size: 1.3em;
+  }
+
+  .prose h3 {
+    font-size: 1.1em;
+  }
+
+  .prose code {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.2em 0.4em;
+    border-radius: 0.25em;
+    font-size: 0.9em;
+  }
+
+  .prose blockquote {
+    border-left: 3px solid rgba(0, 0, 0, 0.2);
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: rgba(0, 0, 0, 0.7);
+  }
 }
