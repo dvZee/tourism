@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "../lib/supabase";
 
 interface UseVoiceChatReturn {
   isListening: boolean;
@@ -12,6 +13,8 @@ interface UseVoiceChatReturn {
   isVoiceMode: boolean;
   toggleVoiceMode: () => void;
   clearTranscript: () => void;
+  useNaturalVoice: boolean;
+  setUseNaturalVoice: (value: boolean) => void;
 }
 
 export function useVoiceChat(language: string = "it-IT"): UseVoiceChatReturn {
@@ -20,10 +23,12 @@ export function useVoiceChat(language: string = "it-IT"): UseVoiceChatReturn {
   const [transcript, setTranscript] = useState("");
   const [isSupported, setIsSupported] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [useNaturalVoice, setUseNaturalVoice] = useState(true); // Default to OpenAI TTS
 
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
   const silenceTimerRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const SpeechRecognition =
@@ -130,7 +135,65 @@ export function useVoiceChat(language: string = "it-IT"): UseVoiceChatReturn {
     }
   };
 
-  const speak = (text: string) => {
+  const speak = async (text: string) => {
+    if (useNaturalVoice) {
+      // Use OpenAI TTS for natural voice
+      try {
+        stopSpeaking(); // Stop any current speech
+        setIsSpeaking(true);
+
+        // Extract language code (it-IT -> it)
+        const langCode = language.split("-")[0];
+
+        // Call Supabase Edge Function
+        const { data, error } = await supabase.functions.invoke(
+          "text-to-speech",
+          {
+            body: { text, language: langCode },
+          }
+        );
+
+        if (error) {
+          console.error("OpenAI TTS error:", error);
+          // Fallback to browser speech
+          speakWithBrowser(text);
+          return;
+        }
+
+        // Create audio from response
+        const audioBlob = new Blob([data], { type: "audio/mpeg" });
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        // Create and play audio
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+
+        audio.onended = () => {
+          setIsSpeaking(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+
+        audio.onerror = (e) => {
+          console.error("Audio playback error:", e);
+          setIsSpeaking(false);
+          URL.revokeObjectURL(audioUrl);
+          // Fallback to browser speech
+          speakWithBrowser(text);
+        };
+
+        await audio.play();
+      } catch (error) {
+        console.error("Failed to use OpenAI TTS:", error);
+        // Fallback to browser speech
+        speakWithBrowser(text);
+      }
+    } else {
+      // Use browser speech synthesis
+      speakWithBrowser(text);
+    }
+  };
+
+  const speakWithBrowser = (text: string) => {
     if ("speechSynthesis" in window) {
       speechSynthesis.cancel();
 
@@ -182,10 +245,19 @@ export function useVoiceChat(language: string = "it-IT"): UseVoiceChatReturn {
   };
 
   const stopSpeaking = () => {
+    // Stop OpenAI audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+
+    // Stop browser speech
     if ("speechSynthesis" in window && speechSynthesis.speaking) {
       speechSynthesis.cancel();
-      setIsSpeaking(false);
     }
+
+    setIsSpeaking(false);
   };
 
   const toggleVoiceMode = () => {
@@ -220,5 +292,7 @@ export function useVoiceChat(language: string = "it-IT"): UseVoiceChatReturn {
     isVoiceMode,
     toggleVoiceMode,
     clearTranscript,
+    useNaturalVoice,
+    setUseNaturalVoice,
   };
 }

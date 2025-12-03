@@ -877,14 +877,30 @@ export default function ChatInterface() {
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
           {voiceChat.isVoiceMode ? (
-            <div className="flex items-center justify-center gap-4">
-              <button
-                onClick={voiceChat.toggleVoiceMode}
-                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white shadow-2xl shadow-red-500/50 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 text-lg font-semibold"
-              >
-                <VolumeX className="w-6 h-6" />
-                {getTranslation(language, "exitVoiceMode") || "Exit Voice Mode"}
-              </button>
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={voiceChat.toggleVoiceMode}
+                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white shadow-2xl shadow-red-500/50 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 text-lg font-semibold"
+                >
+                  <VolumeX className="w-6 h-6" />
+                  {getTranslation(language, "exitVoiceMode") ||
+                    "Exit Voice Mode"}
+                </button>
+              </div>
+              <div className="flex items-center gap-2 text-white/70 text-sm">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={voiceChat.useNaturalVoice}
+                    onChange={(e) =>
+                      voiceChat.setUseNaturalVoice(e.target.checked)
+                    }
+                    className="w-4 h-4 rounded"
+                  />
+                  <span>Natural AI Voice (OpenAI)</span>
+                </label>
+              </div>
             </div>
           ) : (
             <div className="flex gap-2 sm:gap-3">
