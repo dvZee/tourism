@@ -888,19 +888,6 @@ export default function ChatInterface() {
                     "Exit Voice Mode"}
                 </button>
               </div>
-              <div className="flex items-center gap-2 text-white/70 text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={voiceChat.useNaturalVoice}
-                    onChange={(e) =>
-                      voiceChat.setUseNaturalVoice(e.target.checked)
-                    }
-                    className="w-4 h-4 rounded"
-                  />
-                  <span>Natural AI Voice (OpenAI)</span>
-                </label>
-              </div>
             </div>
           ) : (
             <div className="flex gap-2 sm:gap-3">
