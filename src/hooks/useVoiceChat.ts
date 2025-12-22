@@ -145,23 +145,27 @@ export function useVoiceChat(language: string = "it-IT"): UseVoiceChatReturn {
         // Extract language code (it-IT -> it)
         const langCode = language.split("-")[0];
 
-        // Call Supabase Edge Function
-        const { data, error } = await supabase.functions.invoke(
-          "text-to-speech",
-          {
-            body: { text, language: langCode },
-          }
-        );
+        // Call OpenAI API directly for better reliability
+        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`;
 
-        if (error) {
-          console.error("OpenAI TTS error:", error);
-          // Fallback to browser speech
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ text, language: langCode }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("OpenAI TTS error:", response.status, errorText);
           speakWithBrowser(text);
           return;
         }
 
-        // Create audio from response
-        const audioBlob = new Blob([data], { type: "audio/mpeg" });
+        // Get audio as blob directly
+        const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
 
         // Create and play audio
@@ -177,14 +181,12 @@ export function useVoiceChat(language: string = "it-IT"): UseVoiceChatReturn {
           console.error("Audio playback error:", e);
           setIsSpeaking(false);
           URL.revokeObjectURL(audioUrl);
-          // Fallback to browser speech
           speakWithBrowser(text);
         };
 
         await audio.play();
       } catch (error) {
         console.error("Failed to use OpenAI TTS:", error);
-        // Fallback to browser speech
         speakWithBrowser(text);
       }
     } else {
