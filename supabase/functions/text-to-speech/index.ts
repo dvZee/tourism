@@ -1,15 +1,15 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, {
+      status: 200,
+      headers: corsHeaders,
+    });
   }
 
   try {
@@ -24,16 +24,23 @@ serve(async (req) => {
 
     const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
     if (!openaiApiKey) {
-      throw new Error("OpenAI API key not configured");
+      console.error("OpenAI API key not configured");
+      return new Response(
+        JSON.stringify({ error: "OpenAI API key not configured" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Map language codes to OpenAI voice models
     const voiceMap: Record<string, string> = {
-      it: "alloy", // Italian - warm, friendly
+      it: "alloy",
       "it-IT": "alloy",
-      en: "nova", // English - natural, conversational
+      en: "nova",
       "en-US": "nova",
-      es: "shimmer", // Spanish - warm, expressive
+      es: "shimmer",
       "es-ES": "shimmer",
     };
 
@@ -47,7 +54,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "tts-1", // Use tts-1-hd for higher quality
+        model: "tts-1-hd",
         input: text,
         voice: voice,
         speed: 1.0,
@@ -73,9 +80,12 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Error in text-to-speech function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 });
