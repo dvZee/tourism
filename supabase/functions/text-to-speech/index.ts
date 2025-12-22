@@ -34,19 +34,19 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Map language codes to OpenAI voice models
+    // Map language codes to OpenAI voice models for natural sound
     const voiceMap: Record<string, string> = {
-      it: "alloy",
-      "it-IT": "alloy",
+      it: "nova",
+      "it-IT": "nova",
       en: "nova",
       "en-US": "nova",
-      es: "shimmer",
-      "es-ES": "shimmer",
+      es: "nova",
+      "es-ES": "nova",
     };
 
-    const voice = voiceMap[language] || "alloy";
+    const voice = voiceMap[language] || "nova";
 
-    // Call OpenAI TTS API
+    // Call OpenAI TTS API with HD quality
     const response = await fetch("https://api.openai.com/v1/audio/speech", {
       method: "POST",
       headers: {
@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
         model: "tts-1-hd",
         input: text,
         voice: voice,
-        speed: 1.0,
+        speed: 0.95,
       }),
     });
 
